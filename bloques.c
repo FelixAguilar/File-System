@@ -1,1 +1,1 @@
-#include "bloques.c"
+#include "bloques.h"
