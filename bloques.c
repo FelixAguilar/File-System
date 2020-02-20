@@ -60,6 +60,5 @@ int bumount()
         // Si no, devuelve el error que ha ocurrido.
         fprintf(stderr, "%s", strerror(errno));
     }
-
     return EXIT_FAILURE;
 }
