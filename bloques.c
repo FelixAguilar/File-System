@@ -51,10 +51,15 @@ int bread(unsigned int nbloque, void *buf)
 */
 int bumount()
 {
-    if (close(descriptor) < 0)
+    if (close(descriptor) != -1)
     {
-        return EXIT_FAILURE;
+        return EXIT_SUCCESS;
+    }
+    else
+    {
+        // Si no, devuelve el error que ha ocurrido.
+        fprintf(stderr, "%s", strerror(errno));
     }
 
-    return EXIT_SUCCESS;
+    return EXIT_FAILURE;
 }
