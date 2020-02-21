@@ -2,7 +2,6 @@
 
 static int descriptor; // Descriptor del archivo usado como disco virtual.
 
-
 /* Funcion: bmount
 * ---------------
 * Esta función obtiene el descriptor del fichero pasado por parámetro con la 
@@ -14,15 +13,20 @@ static int descriptor; // Descriptor del archivo usado como disco virtual.
 *
 * returns: descriptor.
 */
-
-int bmount (const char *camino){
-    descriptor = open(camino, O_RDWR|O_CREAT, 0666);
-    if(descriptor == -1){
+int bmount(const char *camino)
+{
+    descriptor = open(camino, O_RDWR | O_CREAT, 0666);
+    if (descriptor == -1)
+    {
+        fprintf(stderr, "%s", strerror(errno));
         return EXIT_FAILURE;
-    } else {
+    }
+    else
+    {
         return descriptor;
     }
 }
+
 
 /* Funcion: bread
  * --------------
@@ -73,18 +77,30 @@ int bread(unsigned int nbloque, void *buf)
 * 
 * 
 *
-* returns: writtenBytes
+* returns: bytes
 */
 
-int bwrite(unsigned int nbloque, const void *buf){
-    size_t writtenBytes;
+int bwrite(unsigned int nbloque, const void *buf)
+{
+    size_t bytes;
     // posicionamos el cursor en el bloque donde queremos escribir.
-    lseek(descriptor, nbloque * BLOCKSIZE, SEEK_SET);
-    writtenBytes = write(descriptor, buf, BLOCKSIZE);
-    if(writtenBytes < 0){
+    if (lseek(descriptor, nbloque * BLOCKSIZE, SEEK_SET) != -1)
+    {
+        bytes = write(descriptor, buf, BLOCKSIZE);
+        if (bytes < 0)
+        {
+            fprintf(stderr, "%s", strerror(errno));
+            return EXIT_FAILURE;
+        }
+        else
+        {
+            return bytes;
+        }
+    }
+    else
+    {
+        fprintf(stderr, "%s", strerror(errno));
         return EXIT_FAILURE;
-    }else{
-        return writtenBytes;
     }
 }
 
