@@ -11,18 +11,24 @@
 */
 int main(int argc, char **argv)
 {
+    if (argc < 3)
+    {
+        return EXIT_FAILURE;
+    }
+
     unsigned char buf[BLOCKSIZE];
-    char nombre[] = argv[1];
+    char* nombre = (char*) malloc (sizeof(char));
+    strcpy(nombre,argv[1]);
     int nBloques = atoi(argv[2]);
 
     memset(buf, 0, BLOCKSIZE);
 
     bmount(nombre);
-    for (int i; i < nBloques; i++)
+    for (int i = 0; i < nBloques; i++)
     {
-        bread(i, buf);
+        bwrite(i, buf);
     }
     bumount();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

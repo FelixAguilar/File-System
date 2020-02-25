@@ -27,7 +27,6 @@ int bmount(const char *camino)
     }
 }
 
-
 /* Funcion: bread
  * --------------
  * Lee del dispositivo virtual el bloque especificado por nbloque y copia su 
@@ -38,7 +37,6 @@ int bmount(const char *camino)
  * 
  * returns: numero de bytes leidos o bien EXIT_FAILURE si se produce un error.
 */
-
 int bread(unsigned int nbloque, void *buf)
 {
     // Revisa que el descriptor exista y prueba de reubicar el puntero en este.
@@ -69,7 +67,6 @@ int bread(unsigned int nbloque, void *buf)
 
 /* Funcion: bwrite
 * ---------------
-
 * Esta función permite escribir el contenido de buf en un fichero, concretamen
 * te en el bloque especificado por el parámetro nbloque. En el caso de que no
 * haya error, la función devuelve el número de bytes que se han podido escribir.
@@ -79,7 +76,6 @@ int bread(unsigned int nbloque, void *buf)
 *
 * returns: bytes
 */
-
 int bwrite(unsigned int nbloque, const void *buf)
 {
     size_t bytes;
@@ -112,7 +108,6 @@ int bwrite(unsigned int nbloque, const void *buf)
 *  returns: Devuelve EXIT_SUCCESS si se ha cerrado el fichero correctamente y 
 *           EXIT_FAILURE si ha habido algún error.
 */
-
 int bumount()
 {
     if (close(descriptor) != -1)
