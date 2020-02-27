@@ -154,3 +154,45 @@ int initMB()
     }
     return EXIT_SUCCESS;
 }
+
+/* Funcion: intAI
+* ---------------
+* Esta función inicializa la lista de inodos libres.
+*
+* returns: EXIT_SUCCESS si ha ido bien y EXIT_FAILURE si ha habido algún error.
+*/
+int initAI()
+{
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+
+    int continodos = SB.posPrimerInodoLibre + 1;
+
+    for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
+    {
+        for (int j = 0; j < BLOCKSIZE / INODOSIZE; j++)
+        {
+            inodos[j].tipo = 'l';
+            if (continodos < SB.totInodos)
+            {
+                inodos[j].punterosDirectos[0] = continodos;
+                continodos++;
+            }
+            else
+            {
+                inodos[j].punterosDirectos[0] = UINT_MAX;
+            }
+        }
+        if (bwrite(SBPOS, &inodos) == -1)
+        {
+            perror("Error");
+            return EXIT_FAILURE;
+        }
+        return EXIT_SUCCESS;
+    }
+}
