@@ -3,7 +3,8 @@
 #include <unistd.h> // SEEK_SET, read(), write(), open(), close(), lseek()
 #include <errno.h>  // errno
 #include <string.h> // strerror()
-#include <limits.h> // límite numérico 
+#include <limits.h> // límite numérico
+#include <bloques.h> // enlaze a la libreria bloques.h
 
 int tamMB(unsigned int nbloques);
 int tamAI(unsigned int ninodos);
