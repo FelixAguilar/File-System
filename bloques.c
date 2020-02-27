@@ -107,7 +107,7 @@ int bwrite(unsigned int nbloque, const void *buf)
 * --------------------
 * Libera el descriptor de ficheros con la función close() 
 *
-*  returns: Devuelve EXIT_SUCCESS si se ha cerrado el fichero correctamente y 
+*  returns: devuelve EXIT_SUCCESS si se ha cerrado el fichero correctamente y 
 *           EXIT_FAILURE si ha habido algún error.
 */
 int bumount()
