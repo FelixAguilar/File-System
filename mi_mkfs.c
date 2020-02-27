@@ -26,6 +26,11 @@ int main(int argc, char **argv)
     memset(buf, 0, BLOCKSIZE);
 
     bmount(nombre);
+    
+    // inicialización de metadados
+    initSB(nBloques, ninodos);
+    initMB();
+    initAI();
 
     for (int i = 0; i < nBloques; i++)
     {
