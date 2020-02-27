@@ -27,16 +27,17 @@ int main(int argc, char **argv)
     memset(buf, 0, BLOCKSIZE);
 
     bmount(nombre);
-    
-    // inicialización de metadatos
-    initSB(nBloques, ninodos);
-    initMB();
-    initAI();
 
     for (int i = 0; i < nBloques; i++)
     {
         bwrite(i, buf);
     }
+    
+    // inicialización de metadatos
+    initSB(nBloques, ninodos);
+    initMB();
+    initAI();
+    
     bumount();
 
     return EXIT_SUCCESS;

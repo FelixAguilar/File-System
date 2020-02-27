@@ -59,52 +59,52 @@ int tamAI(unsigned int ninodos)
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
 
-   // Creamos una variable de tipo struct superbloque
+    // Creamos una variable de tipo struct superbloque
 
-   struct superbloque SB;
+    struct superbloque SB;
 
-   // Posición del primer bloque del mapa de bits
-   SB.posPrimerBloqueMB = SBPOS + SBTAM;
+    // Posición del primer bloque del mapa de bits
+    SB.posPrimerBloqueMB = SBPOS + SBSIZE;
 
-   // Posición del último bloque del mapa de bits
-   SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
+    // Posición del último bloque del mapa de bits
+    SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
 
-   // Posición del primer bloque del array de inodos
-   SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
+    // Posición del primer bloque del array de inodos
+    SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
 
-   // Posición del último bloque del array de inodos
-   SB.posUltimoBloqueAI = SB.posPrimerBloqueAI + tamAI(ninodos) - 1;
+    // Posición del último bloque del array de inodos
+    SB.posUltimoBloqueAI = SB.posPrimerBloqueAI + tamAI(ninodos) - 1;
 
-   // Posición del primer bloque de datos
-   SB.posPrimerBloqueDatos = SB.posUltimoBloqueAI + 1;
+    // Posición del primer bloque de datos
+    SB.posPrimerBloqueDatos = SB.posUltimoBloqueAI + 1;
 
-   // Posición del último bloque de datos
-   SB.posUltimoBloqueDatos = nbloques - 1;
+    // Posición del último bloque de datos
+    SB.posUltimoBloqueDatos = nbloques - 1;
 
-   // Posición del inodo del directorio raíz en el array de inodos
-   SB.posInodoRaiz = 0;
+    // Posición del inodo del directorio raíz en el array de inodos
+    SB.posInodoRaiz = 0;
 
-   // Posición del primer inodo libre en el array de inodos
-   SB.posPrimerInodoLibre = 0;
+    // Posición del primer inodo libre en el array de inodos
+    SB.posPrimerInodoLibre = 0;
 
-   // Cantidad de bloques libres en el SF
-   SB.cantBloquesLibres = nbloques;
+    // Cantidad de bloques libres en el SF
+    SB.cantBloquesLibres = nbloques;
 
-   // Cantidad de inodos libres en el array de inodos
-   SB.cantInodosLibres = ninodos;
+    // Cantidad de inodos libres en el array de inodos
+    SB.cantInodosLibres = ninodos;
 
-   // Cantidad total de bloques
-   SB.totBloques = nbloques;
+    // Cantidad total de bloques
+    SB.totBloques = nbloques;
 
-   // Cantidad total de inodos
-   SB.totInodos = ninodos;
+    // Cantidad total de inodos
+    SB.totInodos = ninodos;
 
-   // Finalmente escribimos la estructura en el bloque posSB con bwrite()
-   if (bwrite(SBPOS, &SB) == -1)
-   {
-      return EXIT_FAILURE;
-   }
-   return EXIT_SUCCESS;
+    // Finalmente escribimos la estructura en el bloque posSB con bwrite()
+    if (bwrite(SBPOS, &SB) == -1)
+    {
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 
 /* Funcion: initMB
@@ -138,8 +138,7 @@ int initMB()
     }
 
     // Itera tantas veces como bloques haya en el disco de mapa de bits.
-    int ind = SB.posPrimerBloqueMB;
-    while (ind <= SB.posUltimoBloqueMB)
+    for (int ind = SB.posPrimerBloqueMB; ind <= SB.posUltimoBloqueMB; ind++)
     {
         // Escribe el buffer en disco dejando el bloque a cero.
         if (bwrite(ind, buffer) == -1)
@@ -185,11 +184,11 @@ int initAI()
                 inodos[j].punterosDirectos[0] = UINT_MAX;
             }
         }
-        if (bwrite(SBPOS, &inodos) == -1)
+        if (bwrite(i, &inodos) == -1)
         {
             perror("Error");
             return EXIT_FAILURE;
         }
-        return EXIT_SUCCESS;
     }
+    return EXIT_SUCCESS;
 }
