@@ -7,6 +7,8 @@
 #include <time.h>    // para el guardado de tiempos
 #include "bloques.h" // enlaze a la libreria bloques.h
 
+#define SBPOS 0       // posicion superbloque
+#define SBSIZE 1      // tamaño superbloque
 #define INODOSIZE 128 // bytes
 
 struct superbloque
