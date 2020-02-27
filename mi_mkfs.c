@@ -13,17 +13,20 @@ int main(int argc, char **argv)
 {
     if (argc < 3)
     {
+        // mostrar error.
         return EXIT_FAILURE;
     }
 
     unsigned char buf[BLOCKSIZE];
-    char* nombre = (char*) malloc (sizeof(char));
-    strcpy(nombre,argv[1]);
+
+
+    char* nombre = argv[1];
     int nBloques = atoi(argv[2]);
 
     memset(buf, 0, BLOCKSIZE);
 
     bmount(nombre);
+
     for (int i = 0; i < nBloques; i++)
     {
         bwrite(i, buf);
