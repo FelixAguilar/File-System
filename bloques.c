@@ -32,10 +32,10 @@ int bmount(const char *camino)
  * Lee del dispositivo virtual el bloque especificado por nbloque y copia su 
  * contenido en el buffer apuntado por *buf.
  * 
- *  nbloque: posicion del bloque que se quiere leer.
- *  buf: direccion de memoria del buffer para guardar el valor.
+ *  nbloque: posición del bloque que se quiere leer.
+ *  buf: dirección de memoria del buffer para guardar el valor.
  * 
- * returns: numero de bytes leidos o bien -1 si se produce un error.
+ * returns: número de bytes leidos o bien -1 si se produce un error.
 */
 int bread(unsigned int nbloque, void *buf)
 {
@@ -81,7 +81,7 @@ int bread(unsigned int nbloque, void *buf)
 int bwrite(unsigned int nbloque, const void *buf)
 {
     size_t bytes;
-    // posicionamos el cursor en el bloque donde queremos escribir.
+    // Posicionamos el cursor en el bloque donde queremos escribir.
     if (lseek(descriptor, nbloque * BLOCKSIZE, SEEK_SET) != -1)
     {
         bytes = write(descriptor, buf, BLOCKSIZE);
