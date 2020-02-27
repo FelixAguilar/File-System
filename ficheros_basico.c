@@ -22,3 +22,27 @@ int tamMB(unsigned int nbloques)
         return bloques;
     }
 }
+
+/* Funcion: tamAI
+* ---------------
+* Esta función determina el tamaño del array de inodos en bloques.
+* 
+* ninodos: número de inodos del sistema.
+*
+* returns: bloques.
+*/
+int tamAI(unsigned int ninodos)
+{
+    int ibits = ninodos * INODOSIZE;
+    int bloques = ibits/BLOCKSIZE;
+
+
+    if (ibits % BLOCKSIZE)
+    {
+        return bloques + 1;
+    }
+    else
+    {
+        return bloques;
+    }
+}
