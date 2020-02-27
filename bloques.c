@@ -35,7 +35,7 @@ int bmount(const char *camino)
  *  nbloque: posicion del bloque que se quiere leer.
  *  buf: direccion de memoria del buffer para guardar el valor.
  * 
- * returns: numero de bytes leidos o bien EXIT_FAILURE si se produce un error.
+ * returns: numero de bytes leidos o bien -1 si se produce un error.
 */
 int bread(unsigned int nbloque, void *buf)
 {
@@ -62,7 +62,7 @@ int bread(unsigned int nbloque, void *buf)
             fprintf(stderr, "%s", strerror(errno));
         }
     }
-    return EXIT_FAILURE;
+    return -1;
 }
 
 /* Funcion: bwrite
@@ -70,7 +70,7 @@ int bread(unsigned int nbloque, void *buf)
 * Esta función permite escribir el contenido de buf en un fichero, concretamen
 * te en el bloque especificado por el parámetro nbloque. En el caso de que no
 * haya error, la función devuelve el número de bytes que se han podido escribir.
-* Si hay error el programa sale con EXIT_FAILURE.
+* Si hay error el programa sale con -1.
 * 
 * 
 *
@@ -86,7 +86,7 @@ int bwrite(unsigned int nbloque, const void *buf)
         if (bytes < 0)
         {
             fprintf(stderr, "%s", strerror(errno));
-            return EXIT_FAILURE;
+            return -1;
         }
         else
         {
@@ -96,7 +96,7 @@ int bwrite(unsigned int nbloque, const void *buf)
     else
     {
         fprintf(stderr, "%s", strerror(errno));
-        return EXIT_FAILURE;
+        return -1;
     }
 }
 
