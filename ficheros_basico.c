@@ -62,12 +62,9 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
    // Creamos una variable de tipo struct superbloque
 
    struct superbloque SB;
-   int posSB, tamSB;
-   posSB = 0;
-   tamSB = 0;
 
    // Posición del primer bloque del mapa de bits
-   SB.posPrimerBloqueMB = posSB + tamSB;
+   SB.posPrimerBloqueMB = SBPOS + SBTAM;
 
    // Posición del último bloque del mapa de bits
    SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
@@ -103,7 +100,7 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
    SB.totInodos = ninodos;
 
    // Finalmente escribimos la estructura en el bloque posSB con bwrite()
-   if (bwrite(posSB, &SB) == -1)
+   if (bwrite(SBPOS, &SB) == -1)
    {
       return EXIT_FAILURE;
    }
