@@ -69,7 +69,7 @@ int initMB()
 
     // Obtiene el superbloque del disco
     struct superbloque SB;
-    if (bread(SBPOS, &SB))
+    if (bread(SBPOS, &SB) == -1)
     {
         // Si no se ha podido leer devueve error.
         perror("Error");
@@ -81,7 +81,7 @@ int initMB()
     while (ind <= SB.posUltimoBloqueMB)
     {
         // Escribe el buffer en disco dejando el bloque a cero.
-        if (bwrite(ind, buffer))
+        if (bwrite(ind, buffer) == -1)
         {
             // Si no se ha podido escribir devueve error.
             perror("Error");
