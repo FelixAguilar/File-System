@@ -22,12 +22,13 @@ int main(int argc, char **argv)
 
     char* nombre = argv[1];
     int nBloques = atoi(argv[2]);
+    int ninodos = nBloques/4;
 
     memset(buf, 0, BLOCKSIZE);
 
     bmount(nombre);
     
-    // inicialización de metadados
+    // inicialización de metadatos
     initSB(nBloques, ninodos);
     initMB();
     initAI();
