@@ -46,6 +46,70 @@ int tamAI(unsigned int ninodos)
     }
 }
 
+/* Funcion: initSB
+* ---------------
+* Esta función inicializa las variables contenidas en el struct que forma el superbloque.
+* 
+* nbloques: número de bloques del sistema.
+* ninodos: número de inodos del sistema.
+*
+* returns: EXIT_SUCCESS si se ha podido escribir el superbloque en posSB o EXIT_FAILURE
+* si ha habido algún error con la función bwrite().
+*/
+int initSB(unsigned int nbloques, unsigned int ninodos)
+{
+
+   // Creamos una variable de tipo struct superbloque
+
+   struct superbloque SB;
+   int posSB, tamSB;
+   posSB = 0;
+   tamSB = 0;
+
+   // Posición del primer bloque del mapa de bits
+   SB.posPrimerBloqueMB = posSB + tamSB;
+
+   // Posición del último bloque del mapa de bits
+   SB.posUltimoBloqueMB = SB.posPrimerBloqueMB + tamMB(nbloques) - 1;
+
+   // Posición del primer bloque del array de inodos
+   SB.posPrimerBloqueAI = SB.posUltimoBloqueMB + 1;
+
+   // Posición del último bloque del array de inodos
+   SB.posUltimoBloqueAI = SB.posPrimerBloqueAI + tamAI(ninodos) - 1;
+
+   // Posición del primer bloque de datos
+   SB.posPrimerBloqueDatos = SB.posUltimoBloqueAI + 1;
+
+   // Posición del último bloque de datos
+   SB.posUltimoBloqueDatos = nbloques - 1;
+
+   // Posición del inodo del directorio raíz en el array de inodos
+   SB.posInodoRaiz = 0;
+
+   // Posición del primer inodo libre en el array de inodos
+   SB.posPrimerInodoLibre = 0;
+
+   // Cantidad de bloques libres en el SF
+   SB.cantBloquesLibres = nbloques;
+
+   // Cantidad de inodos libres en el array de inodos
+   SB.cantInodosLibres = ninodos;
+
+   // Cantidad total de bloques
+   SB.totBloques = nbloques;
+
+   // Cantidad total de inodos
+   SB.totInodos = ninodos;
+
+   // Finalmente escribimos la estructura en el bloque posSB con bwrite()
+   if (bwrite(posSB, &SB) == -1)
+   {
+      return EXIT_FAILURE;
+   }
+   return EXIT_SUCCESS;
+}
+
 /* Funcion: initMB
 * ----------------
 * Esta funcion inicia el mapa de bits del disco, actualizando los bloques del
