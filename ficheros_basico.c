@@ -3,9 +3,9 @@
 /* Funcion: tamMB
 * --------------
 * Devuelve el tamaño del espacio de disco ocupado por el mapa de bits en 
-* bloques segun el numero de bloques en el disco.
+* bloques según el número de bloques en el disco.
 *
-*   nbloques: numero de bloques en el disco.
+*   nbloques: número de bloques en el disco.
 *
 *   returns: tamaño del mapa en bloques.
 */
