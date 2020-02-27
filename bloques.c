@@ -9,9 +9,9 @@ static int descriptor; // Descriptor del archivo usado como disco virtual.
 * se produzca un error sale con EXIT_FAILURE. Si no existe el fichero lo crea
 * y si ya existe lo abre en modo lectura/escritura.
 * 
-* descriptor: descriptor del fichero apuntado por *camino
+* camino: nombre del fichero.
 *
-* returns: descriptor.
+* returns: descriptor o EXIT_FAILURE si se produce un error al intentar abrir el fichero.
 */
 int bmount(const char *camino)
 {
@@ -72,9 +72,11 @@ int bread(unsigned int nbloque, void *buf)
 * haya error, la función devuelve el número de bytes que se han podido escribir.
 * Si hay error el programa sale con -1.
 * 
-* 
+* nboque: bloque lógico en el que se quiere escribir
+* buf: puntero al contenido que se quiere escribir en nbloque.
 *
-* returns: bytes
+*
+* returns: bytes o -1 si ha ocurrido un error.
 */
 int bwrite(unsigned int nbloque, const void *buf)
 {
