@@ -80,3 +80,6 @@ int initAI();
 int escribir_bit(unsigned int nbloque, unsigned int bit);
 unsigned char leer_bit(unsigned int nbloque);
 int liberar_bloque(unsigned int nbloque);
+nt escribir_inodo(unsigned int ninodo, struct inodo inodo);
+int leer_inodo(unsigned int ninodo, struct inodo *inodo);
+int reservar_inodo(unsigned char tipo, unsigned char permisos);
