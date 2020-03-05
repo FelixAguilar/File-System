@@ -156,8 +156,7 @@ int initMB()
     }
 
     // Ponemos a 1 los bits del MB que representan los bloques del propio MB.
-    unsigned int posMB = SB.posPrimerBloqueMB;
-    for (posMB; posMB < SB.posUltimoBloqueMB; posMB++)
+    for (int posMB = SB.posPrimerBloqueMB; posMB < SB.posUltimoBloqueMB; posMB++)
     {
         if (escribir_bit(posMB, 1) == -1)
         {
@@ -168,8 +167,7 @@ int initMB()
     }
 
     // Ponemos a 1 los bits del MB que representan los bloques del array de inodos.
-    unsigned int posAI = SB.posPrimerBloqueAI;
-    for (posAI; posAI < SB.posUltimoBloqueAI; posAI++)
+    for (int posAI = SB.posPrimerBloqueAI; posAI < SB.posUltimoBloqueAI; posAI++)
     {
         if (escribir_bit(posAI, 1) == -1)
         {
@@ -254,8 +252,12 @@ unsigned char leer_bit(unsigned int nbloque)
     // Definimos los valores.
     unsigned int posbyte = nbloque / 8;
     unsigned int posbit = nbloque % 8;
-    unsigned int nbloqueMB = posbyte / BLOCKSIZE;
-    unsigned int nbloqueabs = SB.posPrimerBloqueMB + nbloque;
+    
+    if (bread(nbloque,bufferMB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
 
     // Definimos la máscara.
     unsigned char mascara = 128;
@@ -453,7 +455,7 @@ int reservar_bloque()
 
         // Inicializamos la variable que se va a usar para recorrer los bloques del MB.
         posBloqueMB = SB.posPrimerBloqueMB;
-        for (posBloqueMB; (posBloqueMB < SB.posUltimoBloqueMB) && (ret == 0); posBloqueMB++)
+        for (int i = posBloqueMB; (i < SB.posUltimoBloqueMB) && (ret == 0); i++)
         {
             bread(posBloqueMB, bufferMB);
             ret = memcmp(bufferMB, bufferAux, BLOCKSIZE);
@@ -628,11 +630,11 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
     inodo.ctime = time(NULL);
     inodo.mtime = time(NULL);
     inodo.numBloquesOcupados = 0;
-    for (int i = 0; i < length(inodo.punterosDirectos); i++){
+    for (int i = 0; i < sizeof(inodo.punterosDirectos)/sizeof(unsigned int);i++){
         inodo.punterosDirectos[i] = 0;
     } 
         
-    for (int i = 0; i < length(inodo.punterosIndirectos); i++){
+    for (int i = 0; i < sizeof(inodo.punterosIndirectos)/sizeof(unsigned int); i++){
         inodo.punterosIndirectos[i] = 0;
     } 
     // Escribimos el inodo en el disco.
