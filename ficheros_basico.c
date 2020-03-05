@@ -475,3 +475,141 @@ int reservar_bloque()
         return -1;
     }
 }
+
+/* Funcion: escribir_inodo:
+* -------------------------
+* Esta funcion escribe un inodo en el disco, en la posicion indicada por 
+* parametro.
+*
+*  ninodo: Posicion del inodo dentro del area de inodos.
+*  inodo: inodo que se quiere escribir en el disco.
+*
+* returns: EXIT_SUCCESS si ha ido bien y EXIT_FAILURE si ha habido algún error.
+*/
+int escribir_inodo(unsigned int ninodo, struct inodo inodo)
+{
+    // Leer superbloque.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Leer bloque de inodos.
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+    if (bread(SB.posPrimerBloqueAI + ninodo / (BLOCKSIZE / INODOSIZE),
+              &inodos) == -1)
+    {
+        perror("Error:");
+        return EXIT_FAILURE;
+    }
+    // Escribimos el inodo en su posicion del array.
+    inodos[ninodo % (BLOCKSIZE / INODOSIZE)] = inodo;
+
+    // Escribimos el bloque de inodos en el disco.
+    if (bwrite(SB.posPrimerBloqueAI + ninodo / (BLOCKSIZE / INODOSIZE),
+               &inodos) == -1)
+    {
+        perror("Error:");
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: leer_inodo:
+* ---------------------
+* Esta funcion lee un inodo en el disco, en la posicion indicada por 
+* parametro y lo devuevle.
+*
+*  ninodo: Posicion del inodo dentro del area de inodos.
+*  inodo: buffer por donde se devuelve el inodo.
+*
+* returns: EXIT_SUCCESS si ha ido bien y EXIT_FAILURE si ha habido algún error.
+*/
+int leer_inodo(unsigned int ninodo, struct inodo *inodo)
+{
+    // Leer superbloque.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // bloque de inodos.
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+    if (bread(SB.posPrimerBloqueAI + ninodo / (BLOCKSIZE / INODOSIZE),
+              &inodos) == -1)
+    {
+        perror("Error:");
+        return EXIT_FAILURE;
+    }
+
+    // Devolvemos el puntero al inodo solicitado.
+    inodo = &inodos[ninodo % (BLOCKSIZE / INODOSIZE)];
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: reservar_inodo:
+* -------------------------
+* Esta funcion permite reservar un inodo que este libre para su uso.
++
+*  tipo: tipo de archivo a apuntar por este.
+*  permisos: tipo de permisos que va a tener ese archivo.
+*
+* returns: posicion del inodo o bien -1 si se ha producido algun error.
+*/
+int reservar_inodo(unsigned char tipo, unsigned char permisos)
+{
+    // Leer superbloque.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+    // Mira que haya almenos un inodo libre.
+    if (SB.posPrimerInodoLibre == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+    // Guardamaos la posicion del inodo libre y lo leemos del disco
+    unsigned int posInodoReservado = SB.posPrimerInodoLibre;
+    struct inodo inodo;
+    if(leer_inodo(posInodoReservado, &inodo)){
+        perror("Error");
+        return -1;
+    }
+    // Actualizamos el superbloque con el nuevo inodo libre. 
+    SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
+    if(bwrite(SBPOS, &SB) == -1){
+        perror("Error");
+        return -1;
+    }
+    // Informacion del inodo nuevo.
+    inodo.tipo = tipo;
+    inodo.permisos = permisos;
+    inodo.nlinks = 1;
+    inodo.tamEnBytesLog = 0;
+    inodo.atime = time(NULL);
+    inodo.ctime = time(NULL);
+    inodo.mtime = time(NULL);
+    inodo.numBloquesOcupados = 0;
+    for (int i = 0; i < length(inodo.punterosDirectos); i++){
+        inodo.punterosDirectos[i] = 0;
+    } 
+        
+    for (int i = 0; i < length(inodo.punterosIndirectos); i++){
+        inodo.punterosIndirectos[i] = 0;
+    } 
+    // Escribimos el inodo en el disco.
+    if(escribir_inodo(posInodoReservado, inodo))
+    {
+        perror("Error");
+        return -1;
+    }
+
+    return posInodoReservado;
+}
