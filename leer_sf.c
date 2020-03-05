@@ -27,7 +27,8 @@ int main(int argc, char const *argv[])
         int j = 0;
         bread(i, inodos);
         while (j < 8){
-            print("%d,", inodos[j].punterosDirectos[0]);
+            printf("%d,", inodos[j].punterosDirectos[0]);
+            j++;
         }
     }
     return 0;

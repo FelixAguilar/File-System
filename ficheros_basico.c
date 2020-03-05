@@ -58,7 +58,6 @@ int tamAI(unsigned int ninodos)
 */
 int initSB(unsigned int nbloques, unsigned int ninodos)
 {
-
     // Creamos una variable de tipo struct superbloque
 
     struct superbloque SB;
@@ -121,7 +120,7 @@ int initMB()
     unsigned char *buffer = malloc(sizeof(char) * BLOCKSIZE);
     if (!buffer)
     {
-        // Si no se ha podido reservar devueve error.
+        // Si no se ha podido reservar devuelve error.
         perror("Error");
         return EXIT_FAILURE;
     }
@@ -191,4 +190,88 @@ int initAI()
         }
     }
     return EXIT_SUCCESS;
+}
+
+/* Funcion: leer_bit
+* ---------------
+* Esta función lee un determinado bit del MB.
+* 
+* nbloque: bloque físico que contiene el bit.
+*
+* returns: valor del bit leído.
+*/
+unsigned char leer_bit(unsigned int nbloque)
+{
+
+    // Reserva un espacio de memoria para el buffer de tamaño bloque.
+    unsigned char *bufferMB = malloc(sizeof(char) * BLOCKSIZE);
+    if (!bufferMB)
+    {
+        // Si no se ha podido reservar devuelve error.
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Lee el superbloque.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Definimos los valores.
+    unsigned int posbyte = nbloque / 8;
+    unsigned int posbit = nbloque % 8;
+    unsigned int nbloqueMB = posbyte / BLOCKSIZE;
+    unsigned int nbloqueabs = SB.posPrimerBloqueMB + nbloque;
+
+    // Definimos la máscara.
+    unsigned char mascara = 128;
+
+    // Desplazamiento de bits a la derecha.
+    mascara >>= posbit;
+
+    posbyte = posbyte % BLOCKSIZE;
+    // Operador AND para bits.
+    mascara &= bufferMB[posbyte];
+
+    // Desplazamiento de bits a la derecha.
+    mascara >>= (7 - posbit);
+
+    return mascara;
+}
+
+/* Funcion: liberar_bloque
+* ---------------
+* Esta función libera un bloque determinado.
+* 
+* nbloque: bloque físico a liberar.
+*
+* returns: número de bloque liberado
+*/
+int liberar_bloque(unsigned int nbloque)
+{
+    // Lee el superbloque.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Ponemos a 0 el bit correspondiente al nbloque.
+    escribir_bit(nbloque, 0);
+
+    // Aumentamos la cantidad de bloques libres.
+    SB.cantBloquesLibres++;
+
+    // Escribimos el nuevo superbloque.
+    if (bwrite(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    return nbloque;
 }

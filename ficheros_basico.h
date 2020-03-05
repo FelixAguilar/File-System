@@ -77,3 +77,6 @@ int tamAI(unsigned int nbloques);
 int initSB(unsigned int nbloques, unsigned int ninodos);
 int initMB();
 int initAI();
+int escribir_bit(unsigned int nbloque, unsigned int bit);
+unsigned char leer_bit(unsigned int nbloque);
+int liberar_bloque(unsigned int nbloque);
