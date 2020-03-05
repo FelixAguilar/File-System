@@ -275,3 +275,203 @@ int liberar_bloque(unsigned int nbloque)
 
     return nbloque;
 }
+
+/* Funcion: escribir_bit
+* ---------------
+* Esta función permite modificar el valor de un bit del sistema de ficheros.
+* 
+* nbloque: bloque que queremos indicar si está libre u ocupado.
+* bit: valor del bit a escribir.
+*
+* returns: EXIT_SUCCESS si se ha podido escribir el bit o -1 en caso de que se haya producido un error.
+* 
+*/
+int escribir_bit(unsigned int nbloque, unsigned int bit)
+{
+    /* 
+        Declaramos una variable para la posición del byte en el MB que contiene el bit que representa
+        el nbloque y una variable para la posición del bit dentro de ese byte.
+    */
+
+    unsigned int posbyte;
+    unsigned int posbit;
+
+    /*
+        Declaramos una variable para la posición en el MB del bloque donde se halla el bit que representa
+        el nbloque para entonces leerlo y una variable para la posición absoluta del dispositivo virtual
+        donde se encuentra ese bloque.
+    */
+
+    unsigned int nbloqueMB;
+    unsigned int nbloqueabs;
+
+    // Leemos el superbloque para obtener la localización del MB.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    posbyte = nbloque / 8;
+    posbit = nbloque % 8;
+
+    nbloqueMB = posbyte / BLOCKSIZE;
+    nbloqueabs = SB.posPrimerBloqueMB + nbloqueMB;
+
+    // Reserva un espacio de memoria para el buffer de tamaño bloque.
+    unsigned char *bufferMB = malloc(sizeof(char) * BLOCKSIZE);
+    if (!bufferMB)
+    {
+        // Si no se ha podido reservar devueve error.
+        perror("Error");
+        return -1;
+    }
+    // Pone todas las posiciones del bufer a cero.
+    memset(bufferMB, 0, BLOCKSIZE);
+
+    /*
+        Ahora que ya tenemos ubicado el bit en el dispositivo, leemos el bloque que lo contiene y 
+        cargamos el contenido en un buffer, bufferMB, en el que tendremos que modificar el bit deseado, 
+        pero preservando el valor de los demás bits del bloque
+    */
+
+    if (bread(nbloqueabs, bufferMB) == -1)
+    {
+        fprintf(stderr, "%s", strerror(errno));
+        return -1;
+    }
+    posbyte = posbyte % BLOCKSIZE;
+
+    // Ahora que ya tenemos en memoria el byte, bufferMB[posbyte], podemos poner a 1 o a 0 el bit correspondiente.
+    unsigned char mascara = 128;
+    mascara >>= posbit; // desplazamiento de bits a la derecha
+
+    if (bit == 1)
+    {
+        bufferMB[posbyte] |= mascara;
+    }
+    else if (bit == 0)
+    {
+        bufferMB[posbyte] &= ~mascara;
+    }
+
+    /*
+     escribimos ese buffer del MB en el dispositivo virtual con bwrite() en la posición que habíamos calculado 
+     anteriormente, nbloqueabs.
+    */
+
+    if (bwrite(nbloqueabs, bufferMB) == -1)
+    {
+        fprintf(stderr, "%s", strerror(errno));
+        return -1;
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: reservar_bloque()
+* ---------------
+* Esta función reserva un bloque para ser usado, si hay alguno libre.
+* 
+*
+* returns: nbloque si se ha podido reservar un bloque o -1 si se ha producido un error.
+* 
+*/
+int reservar_bloque()
+{
+
+    // Leemos el contenido del superbloque.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Declaramos una variable para recorrer los bloques del Mapa de Bits(MB).
+    unsigned int posBloqueMB;
+
+    // Comprobamos la variable del superbloque que nos indica si quedan bloques libres.
+    if (SB.cantBloquesLibres > 0)
+    {
+        // Reserva un espacio de memoria para el buffer de tamaño bloque.
+        unsigned char *bufferMB = malloc(sizeof(char) * BLOCKSIZE);
+        if (!bufferMB)
+        {
+            // Si no se ha podido reservar devueve error.
+            perror("Error");
+            return -1;
+        }
+        // Pone todas las posiciones del bufer a cero.
+        memset(bufferMB, 0, BLOCKSIZE);
+
+        // Reserva un espacio de memoria para el buffer auxiliar.
+        unsigned char *bufferAux = malloc(sizeof(char) * BLOCKSIZE);
+        if (!bufferAux)
+        {
+            // Si no se ha podido reservar devueve error.
+            perror("Error");
+            return -1;
+        }
+        // Pone todas las posiciones del bufer a uno.
+        memset(bufferAux, 255, BLOCKSIZE);
+
+        // Variable para el resultado de memcomp
+
+        int ret = 0;
+
+        // Inicializamos la variable que se va a usar para recorrer los bloques del MB.
+        posBloqueMB = SB.posPrimerBloqueMB;
+        for (posBloqueMB; (posBloqueMB < SB.posUltimoBloqueMB) && (ret == 0); posBloqueMB++)
+        {
+            bread(posBloqueMB, bufferMB);
+            ret = memcmp(bufferMB, bufferAux, BLOCKSIZE);
+        }
+
+        unsigned int posbyte = 0;
+        for (posbyte = 0; (posbyte < BLOCKSIZE) && (bufferMB[posbyte] = 255); posbyte++)
+        {
+            posbyte++;
+        }
+
+        unsigned int posbit = 0;
+        unsigned char mascara = 128;
+        while (bufferMB[posbyte] & mascara)
+        {
+            posbit++;
+            bufferMB[posbyte] <<= 1; // desplaz. de bits a la izqda
+        }
+
+        unsigned int nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
+        if (escribir_bit(nbloque, 1) == -1)
+        {
+            perror("Error");
+        }
+
+        SB.cantBloquesLibres--;
+
+        // Reserva un espacio de memoria para el buffer de tamaño bloque.
+        unsigned char *bufferCeros = malloc(sizeof(char) * BLOCKSIZE);
+        if (!bufferMB)
+        {
+            // Si no se ha podido reservar devueve error.
+            perror("Error");
+            return -1;
+        }
+        // Pone todas las posiciones del bufer a cero.
+        memset(bufferCeros, 0, BLOCKSIZE);
+
+        if (bwrite(nbloque, bufferCeros) == -1)
+        {
+            fprintf(stderr, "%s", strerror(errno));
+            return -1;
+        }
+
+        return nbloque;
+    }
+    else
+    {
+        printf("ERROR: No quedan bloques libres.");
+        return -1;
+    }
+}
