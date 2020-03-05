@@ -120,7 +120,7 @@ int initMB()
     unsigned char *buffer = malloc(sizeof(char) * BLOCKSIZE);
     if (!buffer)
     {
-        // Si no se ha podido reservar devuelve error.
+        // Si no se ha podido reservar devueve error.
         perror("Error");
         return EXIT_FAILURE;
     }
@@ -146,6 +146,37 @@ int initMB()
             perror("Error");
             return EXIT_FAILURE;
         }
+    }
+
+    //  Ponemos a 1 el bit del MB que representa el superbloque.
+    if (escribir_bit(0, 1) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Ponemos a 1 los bits del MB que representan los bloques del propio MB.
+    unsigned int posMB = SB.posPrimerBloqueMB;
+    for (posMB; posMB < SB.posUltimoBloqueMB; posMB++)
+    {
+        if (escribir_bit(posMB, 1) == -1)
+        {
+            perror("Error");
+            return -1;
+        }
+        posMB++;
+    }
+
+    // Ponemos a 1 los bits del MB que representan los bloques del array de inodos.
+    unsigned int posAI = SB.posPrimerBloqueAI;
+    for (posAI; posAI < SB.posUltimoBloqueAI; posAI++)
+    {
+        if (escribir_bit(posAI, 1) == -1)
+        {
+            perror("Error");
+            return -1;
+        }
+        posAI++;
     }
     return EXIT_SUCCESS;
 }
