@@ -3,43 +3,48 @@
 
 int main(int argc, char const *argv[])
 {
-    int fd = bmount(argv[1]);
-    struct superbloque SB;
-    bread(0, &SB);
+    bmount(argv[1]);
+    struct superbloque * SB = malloc (sizeof(struct superbloque));
+    bread(0, SB);
 
     printf("DATOS DEL SUPERBLOQUE\n");
-    printf("posPrimerBloqueMB = %d\n", SB.posPrimerBloqueMB);
-    printf("posUltimoBloqueMB = %d\n", SB.posUltimoBloqueMB);
-    printf("posPrimerBloqueAI = %d\n", SB.posPrimerBloqueAI);
-    printf("posPrimerBloqueDatos = %d\n", SB.posPrimerBloqueDatos);
-    printf("posUltimoBloqueDatos = %d\n", SB.posUltimoBloqueDatos);
-    printf("posInodoRaiz = %d\n", SB.posInodoRaiz);
-    printf("posPrimerInodoLibre = %d\n", SB.posPrimerInodoLibre);
-    printf("cantBloquesLibres = %d\n", SB.cantBloquesLibres);
-    printf("cantInodosLibres = %d\n", SB.cantInodosLibres);
-    printf("totBloques = %d\n", SB.totBloques);
-    printf("totInodos = %d\n", SB.totInodos);
+    printf("posPrimerBloqueMB = %d\n", (*SB).posPrimerBloqueMB);
+    printf("posUltimoBloqueMB = %d\n", (*SB).posUltimoBloqueMB);
+    printf("posPrimerBloqueAI = %d\n", (*SB).posPrimerBloqueAI);
+    printf("posUltimoBloqueAI = %d\n", (*SB).posUltimoBloqueAI);
+    printf("posPrimerBloqueDatos = %d\n", (*SB).posPrimerBloqueDatos);
+    printf("posUltimoBloqueDatos = %d\n", (*SB).posUltimoBloqueDatos);
+    printf("posInodoRaiz = %d\n", (*SB).posInodoRaiz);
+    printf("posPrimerInodoLibre = %d\n", (*SB).posPrimerInodoLibre);
+    printf("cantBloquesLibres = %d\n", (*SB).cantBloquesLibres);
+    printf("cantInodosLibres = %d\n", (*SB).cantInodosLibres);
+    printf("totBloques = %d\n", (*SB).totBloques);
+    printf("totInodos = %d\n", (*SB).totInodos);
     printf("sizeof struct superbloque is: %lu\n", sizeof(struct superbloque));
     printf("sizeof struct inodo is: %lu\n", sizeof(struct inodo));
     printf("RECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
-    for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++)
-    {
-        struct inodo inodos[8];
-        int j = 0;
-        bread(i, inodos);
-        while (j < 8)
-        {
-            printf("%d,", inodos[j].punterosDirectos[0]);
-            j++;
-        }
-    }
+   
+    /*int i = (*SB).posPrimerInodoLibre;
 
+    struct inodo inodo;
+    while (i >= 0)
+    {
+           leer_inodo(i, &inodo);
+           printf("%d,", inodo.punterosDirectos[0]);
+           i = inodo.punterosDirectos[0];
+    }*/
+
+    
     printf("RESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS\n");
     int bloque = reservar_bloque();
+    bread(0, SB);
     printf("Se ha reservado el bloque físico nº %d que era el 1r bloque libre indicado por el MB\n", bloque);
-    printf("SB.cantBloquesLibres = %d\n", SB.cantBloquesLibres);
+    printf("SB.cantBloquesLibres = %d\n", (*SB).cantBloquesLibres);
     liberar_bloque(bloque);
-    printf("Liberamos ese bloque y después SB.cantBloquesLibres = %d\n", SB.cantBloquesLibres);
+    bread(0, SB);
+    printf("Liberamos ese bloque y después SB.cantBloquesLibres = %d\n", (*SB).cantBloquesLibres);
+
+    /*
     char ret;
     printf("MAPA DE bitS CON BLOQUES DE METADATOS OCUPADOS\n");
     ret = leer_bit(SBPOS);
@@ -92,6 +97,6 @@ int main(int argc, char const *argv[])
     printf("nLinks = %d\n",inodo.nlinks);
     printf("tamEnBytesLog = %d\n",inodo.tamEnBytesLog);
     printf("numBloquesOcupados = %d\n",inodo.numBloquesOcupados);
-
+    */
     return 0;
 }
