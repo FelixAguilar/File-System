@@ -23,25 +23,47 @@ int main(int argc, char const *argv[])
        printf("sizeof struct inodo is: %lu\n", sizeof(struct inodo));
        printf("RECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
-       /*for (int i = SB.posPrimerBloqueAI; i <= SB.posUltimoBloqueAI; i++){
-        struct inodo inodos [8];
-        int j = 0;
-        bread(i, inodos);
-        while (j < 8){
-            print("%d,", inodos[j].punterosDirectos[0]);
-        }
-    }*/
+       /*for (int i = SB.posPrimerInodoLibre; i <= SB.cantInodosLibres; i++)
+       {
+              struct inodo inodo;
+              leer_inodo(i, &inodo);
+              printf("%d,", inodo.punterosDirectos[0]);
+       }*/
 
+       char ret;
+       ret = leer_bit(SBPOS);
        printf("RESERVAMOS UN BLOQUE Y LUEGO LO LIBERAMOS\n");
        int bloque = reservar_bloque();
        bread(0, &SB);
        printf("Se ha reservado el bloque físico nº %d que era el 1r bloque libre indicado por el MB\n", bloque);
        printf("SB.cantBloquesLibres = %d\n", SB.cantBloquesLibres);
+       printf("[leer_bit()→ nbloque: %d, posbyte:%d, posbit:%d, nbloqueMB:%d, nbloqueabs:%d) valor del ret correspondiente a SB.posPrimerBloqueDatos (o sea al BF nº %d)  = %d\n",
+              SB.posPrimerBloqueDatos, SB.posPrimerBloqueDatos / 8, SB.posPrimerBloqueDatos % 8, (SB.posPrimerBloqueDatos / BLOCKSIZE) / 8, SB.posPrimerBloqueMB + (SB.posPrimerBloqueDatos / BLOCKSIZE) / 8, SB.posPrimerBloqueDatos, ret);
+       ret = leer_bit(SB.posUltimoBloqueDatos);
        liberar_bloque(bloque);
        bread(0, &SB);
        printf("Liberamos ese bloque y después SB.cantBloquesLibres = %d\n", SB.cantBloquesLibres);
 
-       char ret;
+       printf("DATOS DEL DIRECTORIO RAIZ\n");
+       struct inodo inodo;
+       leer_inodo(0, &inodo);
+       printf("Tipo: %c\n", inodo.tipo);
+       printf("Permisos: %d\n", inodo.permisos);
+       struct tm *ts;
+       char atime[80];
+       char mtime[80];
+       char ctime[80];
+       ts = localtime(&inodo.atime);
+       strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+       ts = localtime(&inodo.mtime);
+       strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+       ts = localtime(&inodo.ctime);
+       strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+       printf("ATIME: %s MTIME: %s CTIME: %s\n", atime, mtime, ctime);
+       printf("nLinks = %d\n", inodo.nlinks);
+       printf("tamEnBytesLog = %d\n", inodo.tamEnBytesLog);
+       printf("numBloquesOcupados = %d\n", inodo.numBloquesOcupados);
+
        printf("MAPA DE bitS CON BLOQUES DE METADATOS OCUPADOS\n");
        ret = leer_bit(SBPOS);
        printf("[leer_bit()→ nbloque: %d, posbyte:%d, posbit:%d, nbloqueMB:%d, nbloqueabs:%d) valor del ret correspondiente a posSB (o sea al BF nº %d)  = %d\n",

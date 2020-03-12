@@ -423,8 +423,6 @@ int reservar_bloque()
         }
     }
 
-    printf("%d, ", posBloqueMB);
-
     free(bufferAux);
 
     // Localizar el byte en el que se encuentra el bloque vacio.
@@ -433,8 +431,6 @@ int reservar_bloque()
         posbyte++;
     }
 
-    printf("%d, ", posbyte);
-
     // Localizar el bit del primer bloque libre.
     while (bufferMB[posbyte] & mascara)
     {
@@ -442,13 +438,9 @@ int reservar_bloque()
         bufferMB[posbyte] <<= 1;
     }
 
-    printf("%d, ", posbit);
-
     // Determina la posicion del bloque libre y liberamos el bufferMB.
     nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) * 8 + posbit;
     free(bufferMB);
-
-    printf("%d, ", nbloque);
 
     // Reserva el bloque en el mapa de bits.
     if (escribir_bit(nbloque, 1))
@@ -533,4 +525,158 @@ int liberar_bloque(unsigned int nbloque)
     }
 
     return nbloque;
+}
+
+/* Funcion: escribir_inodo:
+* -------------------------
+* Esta funcion permite escribir un inodo en el disco en la posicion indicada 
+* por parametro.
+*
+*  ninodo: posicion del inodo en el array de inodos.
+*  inodo: inodo que se quiere escribir en el disco.
+*
+* return: EXIT_SUCCESS si ha podido realizarlo, si no EXIT_FAILURE.
+*/
+int escribir_inodo(unsigned int ninodo, struct inodo inodo)
+{
+    // Lee el superbloque del disco.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Buffer de inodos.
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+
+    // Lee el bloque que contiene el inodo.
+    if (bread((SB.posPrimerBloqueAI + (ninodo / (BLOCKSIZE / INODOSIZE))), inodos) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Modifica el buffer con el inodo en el lugar correspondiente.
+    inodos[(ninodo % (BLOCKSIZE / INODOSIZE))] = inodo;
+
+    // Escribe el buffer en el disco.
+    if (bwrite((SB.posPrimerBloqueAI + (ninodo / (BLOCKSIZE / INODOSIZE))), inodos) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: leer_inodo:
+* ---------------------
+* Esta funcion permite leer un inodo en el disco en la posicion indicada por 
+* parametro.
+* 
+*  ninodo: posicion del inodo en el array de inodos.
+*  inodo: puntero al buffer del inodo.
+*
+* return: EXIT_SUCCESS si ha podido realizarlo, si no EXIT_FAILURE.
+*/
+int leer_inodo(unsigned int ninodo, struct inodo *inodo)
+{
+    // Lee el superbloque del disco.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Buffer de inodos.
+    struct inodo inodos[BLOCKSIZE / INODOSIZE];
+
+    // Lee el bloque que contiene el inodo.
+    if (bread((SB.posPrimerBloqueAI + (ninodo / (BLOCKSIZE / INODOSIZE))), inodos) == -1)
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    // Modifica el buffer con el inodo en el lugar correspondiente.
+    *inodo = inodos[(ninodo % (BLOCKSIZE / INODOSIZE))];
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: reservar_inodo:
+* -------------------------
+* Esta funcion permite reservar un inodo que este libre para su uso.
+*
+*  tipo: tipo de archivo a apuntar por este.
+*  permisos: tipo de permisos que tendra este archivo.
+*
+* return: la posicion del inodo o -1 si se ha producido algun error.
+*/
+int reservar_inodo(unsigned char tipo, unsigned char permisos)
+{
+    // Lee el superbloque del disco.
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Comprobar si hay inodos libres.
+    if (!SB.cantInodosLibres)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Obtener el primer inodo libre.
+    unsigned int posInodoReservado = SB.posPrimerInodoLibre;
+
+    // Buffer de un inodo.
+    struct inodo inodo;
+
+    // Actualiza la lista enlazada de inodos libres.
+    if (leer_inodo(posInodoReservado, &inodo))
+    {
+        perror("Error");
+        return -1;
+    }
+    SB.posPrimerInodoLibre = inodo.punterosDirectos[0];
+
+    // Inicializa todos los campos del inodo.
+    inodo.tipo = tipo;
+    inodo.permisos = permisos;
+    inodo.nlinks = 1;
+    inodo.tamEnBytesLog = 0;
+    inodo.atime = time(NULL);
+    inodo.ctime = time(NULL);
+    inodo.mtime = time(NULL);
+    inodo.numBloquesOcupados = 0;
+    for (int i = 0; i < (sizeof(inodo.punterosDirectos) / sizeof(unsigned int)); i++)
+    {
+        inodo.punterosDirectos[i] = 0;
+    }
+    for (int i = 0; i < (sizeof(inodo.punterosIndirectos) / sizeof(unsigned int)); i++)
+    {
+        inodo.punterosIndirectos[i] = 0;
+    }
+
+    // Escribe el inodo en el array de inodos del disco.
+    if (escribir_inodo(posInodoReservado, inodo))
+    {
+        perror("Error");
+        return -1;
+    }
+
+    // Actualizar el superbloque y escribirlo en el disco.
+    SB.cantInodosLibres--;
+    if (bwrite(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    return posInodoReservado;
 }
