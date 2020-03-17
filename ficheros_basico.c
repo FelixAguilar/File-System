@@ -680,3 +680,210 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
 
     return posInodoReservado;
 }
+
+/* Funcion: obtener_nrangoBL:
+* ---------------------------
+* Esta funcion permite obtener el rango de punteros en el que se situa el 
+* bloque logico indicado por parametro. Ademas obtiene la direccion almacenada 
+* en el puntero correspondiente del inodo.
+*
+*  inodo: inodo que contiene los punteros del nivel actual.
+*  nblogico: la posicion logica del bloque en el inodo.
+*  ptr: puntero al siguiente nivel de la estructura del archivo.
+*
+* return: Devuelve el nivel en el que se encuentra el bloque o bien -1.
+*/
+int obtener_nrangoBL(struct inodo inodo, unsigned int nblogico, unsigned int *ptr)
+{
+    if (nblogico < DIRECTOS)
+    {
+        ptr = inodo.punterosDirectos[nblogico];
+        return 0;
+    }
+    if (nblogico < INDIRECTOS0)
+    {
+        ptr = inodo.punterosIndirectos[0];
+        return 1;
+    }
+    if (nblogico < INDIRECTOS1)
+    {
+        ptr = inodo.punterosIndirectos[1];
+        return 2;
+    }
+    if (nblogico < INDIRECTOS2)
+    {
+        ptr = inodo.punterosIndirectos[2];
+        return 3;
+    }
+    // Si se encuentra fuera de rango error.
+    ptr = 0;
+    perror("Bloque lógico fuera de rango");
+    return -1;
+}
+
+/* Funcion: obtener_indice:
+* -------------------------
+* Esta funcion permite generalizar la obtencion de los indices de los 
+* bloques de punteros.
+* 
+*  nblogicos: la posicion logica del bloque en el inodo.
+*  nivel_punteros: nivel en el inodo que se encuentra la funcion.
+*
+* return: devuelve el indice del bloque del nivel inferior o bien -1 si error.
+*/
+int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros)
+{
+    if (nblogico < DIRECTOS)
+    {
+        return nblogico;
+    }
+    if (nblogico < INDIRECTOS0)
+    {
+        return nblogico - DIRECTOS;
+    }
+    if (nblogico < INDIRECTOS1)
+    {
+        if (nivel_punteros == 2)
+        {
+            return (nblogico - INDIRECTOS0) / NPUNTEROS;
+        }
+        if (nivel_punteros == 1)
+        {
+            return (nblogico - INDIRECTOS0) % NPUNTEROS;
+        }
+    }
+    if (nblogico < INDIRECTOS2)
+    {
+        if (nivel_punteros == 3)
+        {
+            return (nblogico - INDIRECTOS1) / (NPUNTEROS * NPUNTEROS);
+        }
+        if (nivel_punteros == 2)
+        {
+            return ((nblogico - INDIRECTOS1) % (NPUNTEROS * NPUNTEROS)) / NPUNTEROS;
+        }
+        if (nivel_punteros == 1)
+        {
+            return ((nblogico - INDIRECTOS1) % (NPUNTEROS * NPUNTEROS)) % NPUNTEROS;
+        }
+    }
+    return -1;
+}
+
+/* Funcion: traducir_bloque_inodo:
+* --------------------------------
+* Esta funcion se encarga de obtener el numero de bloque fisico correspondiente
+* a un bloque logico determinado del inodo indicado.
+*
+*  ninodo: es el numero de inodo en el array de inodos.
+*  nblogico: es la posicion logioca del bloque en el inodo.
+*  reservar: indica si hay que reservar y leer un bloque (1) o solo leerlo (0).
+*
+* return: Devuelve la posicion fisica del bloque leido o bien leido y resevado.
+*/
+int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reservar)
+{
+    // Declaracion variables.
+    struct inodo inodo;
+    int ptr = 0, ptr_ant = 0, salvar_inodo = 0, nRangoBL, nivel_punteros, indice;
+    int buffer[NPUNTEROS];
+    if (leer_inodo(ninodo, &inodo))
+    {
+        perror("Error");
+        return -1;
+    }
+    nRangoBL = obtener_nrangoBL(inodo, nblogico, &ptr);
+    if (nRangoBL == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+    nivel_punteros = nRangoBL;
+    while (nivel_punteros)
+    {
+        if (!ptr)
+        {
+            if (!reservar)
+            {
+                return -1;
+            }
+            salvar_inodo = 1;
+            ptr = reservar_bloque();
+            if (ptr == -1)
+            {
+                perror("Error");
+                return -1;
+            }
+            inodo.numBloquesOcupados++;
+            inodo.ctime = time(NULL);
+            if (nivel_punteros == nRangoBL)
+            {
+                inodo.punterosIndirectos[nRangoBL - 1] = ptr;
+            }
+            else
+            {
+                buffer[indice] = ptr;
+                if (bwrite(ptr_ant, buffer) == -1)
+                {
+                    perror("Error");
+                    return -1;
+                }
+            }
+        }
+        if (bread(ptr, buffer) == -1)
+        {
+            perror("Error");
+            return -1;
+        }
+        indice = obtener_indice(nblogico, nivel_punteros);
+        if (indice == -1)
+        {
+            perror("Error");
+            return -1;
+        }
+        ptr_ant = ptr;
+        ptr = buffer[indice];
+        nivel_punteros--;
+    }
+    if (!ptr)
+    {
+        if (!reservar)
+        {
+            return -1;
+        }
+        else
+        {
+            salvar_inodo = 1;
+            ptr = reservar_bloque();
+            if (ptr == -1)
+            {
+                perror("Error");
+                return -1;
+            }
+            inodo.numBloquesOcupados++;
+            inodo.ctime = time(NULL);
+            if (!nRangoBL)
+            {
+                inodo.punterosDirectos[nblogico] = ptr;
+            }
+            else
+            {
+                buffer[indice] = ptr;
+                if (bwrite(ptr_ant, buffer) == -1)
+                {
+                    perror("Error");
+                    return -1;
+                }
+            }
+        }
+    }
+    if (salvar_inodo == 1)
+    {
+        if (!escribir_inodo(ninodo, inodo))
+        {
+            perror("Error");
+            return -1;
+        }
+    }
+    return ptr;
+}
