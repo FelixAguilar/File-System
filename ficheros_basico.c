@@ -693,30 +693,30 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
 *
 * return: Devuelve el nivel en el que se encuentra el bloque o bien -1.
 */
-int obtener_nrangoBL(struct inodo inodo, unsigned int nblogico, unsigned int *ptr)
+int obtener_nrangoBL(struct inodo inodo, unsigned int nblogico, int *ptr)
 {
     if (nblogico < DIRECTOS)
     {
-        ptr = inodo.punterosDirectos[nblogico];
+        *ptr = inodo.punterosDirectos[nblogico];
         return 0;
     }
     if (nblogico < INDIRECTOS0)
     {
-        ptr = inodo.punterosIndirectos[0];
+        *ptr = inodo.punterosIndirectos[0];
         return 1;
     }
     if (nblogico < INDIRECTOS1)
     {
-        ptr = inodo.punterosIndirectos[1];
+        *ptr = inodo.punterosIndirectos[1];
         return 2;
     }
     if (nblogico < INDIRECTOS2)
     {
-        ptr = inodo.punterosIndirectos[2];
+        *ptr = inodo.punterosIndirectos[2];
         return 3;
     }
     // Si se encuentra fuera de rango error.
-    ptr = 0;
+    *ptr = 0;
     perror("Bloque lógico fuera de rango");
     return -1;
 }
@@ -818,11 +818,15 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
             inodo.ctime = time(NULL);
             if (nivel_punteros == nRangoBL)
             {
-                inodo.punterosIndirectos[nRangoBL - 1] = ptr;
+                inodo.punterosIndirectos[nRangoBL - 1] = ptr; 
+                // IMPRIMIMOS PARA TEST
+                printf("%d\n", ptr);
             }
             else
             {
                 buffer[indice] = ptr;
+                // IMPRIMIMOS PARA TEST
+                printf("%d\n", ptr);
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
                     perror("Error");
@@ -865,10 +869,14 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
             if (!nRangoBL)
             {
                 inodo.punterosDirectos[nblogico] = ptr;
+                // IMPRIMIMOS PARA TEST
+                printf("%d\n", ptr);
             }
             else
             {
                 buffer[indice] = ptr;
+                // IMPRIMIMOS PARA TEST
+                printf("%d\n", ptr);
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
                     perror("Error");
@@ -879,7 +887,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico, char reser
     }
     if (salvar_inodo == 1)
     {
-        if (!escribir_inodo(ninodo, inodo))
+        if (escribir_inodo(ninodo, inodo))
         {
             perror("Error");
             return -1;

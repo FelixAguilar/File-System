@@ -87,6 +87,34 @@ int main(int argc, char const *argv[])
        printf("[leer_bit()→ nbloque: %d, posbyte:%d, posbit:%d, nbloqueMB:%d, nbloqueabs:%d) valor del ret correspondiente a SB.posUltimoBloqueDatos (o sea al BF nº %d)  = %d\n",
               SB.posUltimoBloqueDatos, SB.posUltimoBloqueDatos / 8, SB.posUltimoBloqueDatos % 8, (SB.posUltimoBloqueDatos / BLOCKSIZE) / 8, SB.posPrimerBloqueMB + (SB.posUltimoBloqueDatos / BLOCKSIZE) / 8, SB.posUltimoBloqueDatos, ret);
 
+       // para el nivel 4:
+
+       int indice = reservar_inodo('f', 6);
+
+       traducir_bloque_inodo(indice, 8, 1);
+       traducir_bloque_inodo(indice, 204, 1);
+       traducir_bloque_inodo(indice, 30004, 1);
+       traducir_bloque_inodo(indice, 400004, 1);
+       traducir_bloque_inodo(indice, 16843019, 1);
+
+       leer_inodo(indice, &inodo);
+
+       printf("Tipo: %c\n", inodo.tipo);
+       printf("Permisos: %d\n", inodo.permisos);
+       ts = localtime(&inodo.atime);
+       strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+       ts = localtime(&inodo.mtime);
+       strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+       ts = localtime(&inodo.ctime);
+       strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+       printf("ATIME: %s MTIME: %s CTIME: %s\n", atime, mtime, ctime);
+       printf("nLinks = %d\n", inodo.nlinks);
+       printf("tamEnBytesLog = %d\n", inodo.tamEnBytesLog);
+       printf("numBloquesOcupados = %d\n", inodo.numBloquesOcupados);
+
+       
+
+
        bumount();
        return 0;
 }
