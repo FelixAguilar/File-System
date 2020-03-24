@@ -1,4 +1,4 @@
-#include "fichero.h";
+#include "fichero.h"
 
 /* Funcion: mi_write_f:
 * ---------------------
@@ -68,13 +68,21 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
         perror("Error");
         return -1;
     }
-    bytes_escritos = aux - desp1;
+    if (bloqueLI == bloqueLF)
+    {
+        bytes_escritos = (aux - desp1) - (BLOCKSIZE - desp1 - nbytes);
+    }
+    else
+    {
+        bytes_escritos = aux - desp1;
+    }
 
     // Caso en que el archivo vaya a ocupar mas de un bloque.
     if (bloqueLI != bloqueLF)
     {
         // Tratamiento bloques intermedios.
-        int i = bloqueLI++;
+        int i = bloqueLI + 1;
+        
         while (i < bloqueLF)
         {
             // Obtiene el bloque fisico intermedio en el arcivo.
@@ -121,7 +129,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
             perror("Error");
             return -1;
         }
-        bytes_escritos = bytes_escritos + aux - desp2;
+        bytes_escritos = bytes_escritos + desp2 + 1;
     }
     // Lee el inodo despues de la operacion de escritura del archivo.
     if (leer_inodo(ninodo, &inodo))
@@ -278,4 +286,67 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
         return -1;
     }
     return bytes_leidos;
+}
+
+/* Funcion: mi_stat_f:
+* ---------------------
+* Esta funcion devuelve la metainformación de un fichero/directorio.
+*
+*  ninodo: numero de nodo en el array de inodos.
+*  p_stat: tipo estructurado que contiene los mismos campos que un inodo excepto los punteros.
+*  
+* return: EXIT_FAILURE si se ha producido un error leyendo el inodo o EXIT_SUCCESS en caso contrario.
+*/
+int mi_stat_f(unsigned int ninodo, struct STAT *p_stat)
+{
+    // Lee el inodo indicado por parametro.
+    struct inodo inodo;
+    if (leer_inodo(ninodo, &inodo))
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    p_stat->tipo = inodo.tipo;
+    p_stat->permisos = inodo.permisos;
+    p_stat->nlinks = inodo.nlinks;
+    p_stat->tamEnBytesLog = inodo.tamEnBytesLog;
+    p_stat->atime = inodo.atime;
+    p_stat->ctime = inodo.ctime;
+    p_stat->mtime = inodo.mtime;
+    p_stat->numBloquesOcupados = inodo.numBloquesOcupados;
+
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: mi_chmod_f:
+* ---------------------
+* Esta funcion cambia los permisos de un fichero/directorio.
+*
+*  ninodo: numero de nodo en el array de inodos.
+*  permisos: tipo de permiso que se quiere establecer.
+*  
+* return: EXIT_FAILURE si se ha producido un error leyendo el inodo o EXIT_SUCCESS en caso contrario.
+*/
+int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
+{
+    // Lee el inodo indicado por parametro.
+    struct inodo inodo;
+    if (leer_inodo(ninodo, &inodo))
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    inodo.permisos = permisos;
+
+    inodo.ctime = time(NULL);
+
+    if (escribir_inodo(ninodo, inodo))
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }
