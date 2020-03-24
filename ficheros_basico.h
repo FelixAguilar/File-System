@@ -5,7 +5,7 @@
 #include <string.h>  // strerror()
 #include <limits.h>  // límite numérico
 #include <time.h>    // para el guardado de tiempos
-#include "bloques.h" // enlaze a la libreria bloques.h
+#include "bloques.h" // enlace a la libreria bloques.h
 
 #define SBPOS 0                                      // posicion superbloque
 #define SBSIZE 1                                     // tamaño superbloque
