@@ -16,27 +16,37 @@ int main(int argc, char const *argv[])
     bread(0, &SB);
 
     int offset = 0;
-    char buffer[BLOCKSIZE];
-    memset(buffer, 0, BLOCKSIZE);
+    int tamBuffer = 1024;
+    char buffer[tamBuffer];
+    memset(buffer, 0, tamBuffer);
     int bytes = 0;
-    int i = mi_read_f(ninodo, buffer, offset, BLOCKSIZE);
-    while (i > 0)
+
+    printf("inodo: %d\n", ninodo);
+    
+    int leidos = mi_read_f(ninodo, buffer, offset, tamBuffer);
+    
+    
+    while (leidos > 0)
     {
-        bytes = bytes + i;
-        write(1, buffer, BLOCKSIZE);
-        memset(buffer, 0, BLOCKSIZE);
-        offset = offset + BLOCKSIZE;
-        i = mi_read_f(ninodo, buffer, offset, BLOCKSIZE);
+        printf("i: %d", leidos);
+        bytes = bytes + leidos;
+       // write(1, buffer, leidos);
+        memset(buffer, 0, tamBuffer);
+        offset = offset + tamBuffer;
+        leidos = mi_read_f(ninodo, buffer, offset, tamBuffer);
     }
 
     struct inodo inodo;
     leer_inodo(ninodo, &inodo);
 
-    char aux[20];
-    //sprintf(aux, "%d", bytes);
-    //write(2, aux , sizeof(int));
+    /* char aux[200];
+    sprintf(aux, "%d", bytes);
+    write(2, aux, sizeof(int));
     sprintf(aux, "%d", inodo.tamEnBytesLog);
     write(2, aux, sizeof(int));
+   */
+
+    // printf("bytes: %d, tamEnBytesLog: %d\n", bytes, inodo.tamEnBytesLog);
     bumount();
     return 0;
 }
