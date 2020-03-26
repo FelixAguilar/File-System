@@ -21,14 +21,14 @@ int main(int argc, char const *argv[])
        printf("totInodos = %d\n", SB.totInodos);
        printf("sizeof struct superbloque is: %lu\n", sizeof(struct superbloque));
        printf("sizeof struct inodo is: %lu\n", sizeof(struct inodo));
-       printf("RECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
+       /*printf("RECORRIDO LISTA ENLAZADA DE INODOS LIBRES\n");
 
-       /*for (int i = SB.posPrimerInodoLibre; i <= SB.cantInodosLibres; i++)
+       for (int i = SB.posPrimerInodoLibre; i <= SB.cantInodosLibres; i++)
        {
               struct inodo inodo;
               leer_inodo(i, &inodo);
               printf("%d,", inodo.punterosDirectos[0]);
-       }*/
+       }
 
        char ret;
        ret = leer_bit(SBPOS);
@@ -113,7 +113,7 @@ int main(int argc, char const *argv[])
        printf("numBloquesOcupados = %d\n", inodo.numBloquesOcupados);
 
        
-
+*/
 
        bumount();
        return 0;
