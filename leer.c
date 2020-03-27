@@ -16,24 +16,26 @@ int main(int argc, char const *argv[])
     bread(0, &SB);
 
     int offset = 0;
-    int tamBuffer = 1024;
+    int tamBuffer = 1300;
     char buffer[tamBuffer];
     memset(buffer, 0, tamBuffer);
     int bytes = 0;
 
-    printf("inodo: %d\n", ninodo);
-    
     int leidos = mi_read_f(ninodo, buffer, offset, tamBuffer);
-    
-    
+    // printf("i: %d, iter: %d", leidos, offset);
     while (leidos > 0)
     {
-        printf("i: %d", leidos);
+        if (leidos != BLOCKSIZE)
+        {
+            // printf("leidos: %d\n", leidos);
+        }
+
         bytes = bytes + leidos;
-       // write(1, buffer, leidos);
+        write(1, buffer, leidos);
         memset(buffer, 0, tamBuffer);
         offset = offset + tamBuffer;
         leidos = mi_read_f(ninodo, buffer, offset, tamBuffer);
+        //  printf("i: %d, iter: %d", leidos, offset);
     }
 
     struct inodo inodo;
