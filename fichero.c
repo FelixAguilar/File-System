@@ -155,152 +155,83 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     return bytes_escritos;
 }
 
-int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
-              unsigned int nbytes)
+int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsigned int nbytes)
 {
-    // Lee el inodo indicado por parametro.
-    struct inodo inodo;
-    if (leer_inodo(ninodo, &inodo))
-    {
-        perror("Error");
-        return -1;
-    }
-    // Comprueba si el inodo apunta a un archivo con permiso de escritura.
-    if ((inodo.permisos & 4) != 4)
-    {
-        perror("Error");
-        return -1;
-    }
-
-    int leidos = 0;
-    if (offset >= inodo.tamEnBytesLog)
-    {
-        return leidos;
-    }
-    if ((offset + nbytes) >= inodo.tamEnBytesLog)
-    {
-        nbytes = inodo.tamEnBytesLog - offset;
-    }
-
-    // Calcula el primer y ultimo bloque de la escritura.
-    int bloqueLI = offset / BLOCKSIZE;
-    int bloqueLF = (offset + nbytes - 1) / BLOCKSIZE;
-    // Calcula el desplazamiento en el bloque.
-    int desp1 = offset % BLOCKSIZE;
-    // Calcula el desplazamiento final.
-    int desp2 = (offset + nbytes - 1) % BLOCKSIZE;
-
+    int desp1; //deplazamiento
+    int desp2;
     char buf_bloque[BLOCKSIZE];
-
-    // Obtiene el bloque fisico del inodo.
-    int bloquef = traducir_bloque_inodo(ninodo, bloqueLI, 0);
-    if (bloquef == -1)
+    int bloque; //bloque fisico
+    int leidos;
+    int primerBLogico; //inicio donde escribimos
+    int ultimoBLogico; //fin donde escribimos
+    struct inodo inodo;
+    leer_inodo(ninodo, &inodo);
+    if ((inodo.permisos & 4) == 4)
     {
-        leidos = leidos + BLOCKSIZE;
+        if(offset >= inodo.tamEnBytesLog)
+        {
+            leidos = 0; // No podemos leer nada
+            return leidos;
+        }    
+        if(offset + nbytes >= inodo.tamEnBytesLog)
+        {
+            nbytes = inodo.tamEnBytesLog - offset; // leemos sólo los bytes desde el offset hasta EOF 
+        }
+        primerBLogico = offset / BLOCKSIZE;
+        ultimoBLogico = (offset + nbytes - 1) / BLOCKSIZE;
+        desp1 = offset % BLOCKSIZE;
+        desp2 = (offset + nbytes - 1) % BLOCKSIZE;
+        bloque = traducir_bloque_inodo(ninodo, primerBLogico,0);
+        if(primerBLogico == ultimoBLogico)
+        {
+            if (bloque!=-1)
+            {
+                bread(bloque, buf_bloque);
+                memcpy(buf_original,buf_bloque + desp1, nbytes);
+            }
+            leidos = nbytes;
+        }
+        else
+        {
+            //Primer Bloque
+            if (bloque!=-1)
+            {
+                bread(bloque, buf_bloque);
+                memcpy(buf_original,buf_bloque + desp1, BLOCKSIZE-desp1);
+            }
+            leidos = BLOCKSIZE-desp1;
+
+            //Bloque intermedios
+            for (int i = primerBLogico+1; i < ultimoBLogico; i++)
+            {
+                bloque = traducir_bloque_inodo(ninodo, i,0);
+                if (bloque != -1)
+                {
+                    bread(bloque, buf_original + (BLOCKSIZE - desp1) + (i - primerBLogico - 1) * BLOCKSIZE);
+                }
+                leidos += BLOCKSIZE;
+            }
+            
+            //Ultimo bloque
+            bloque = traducir_bloque_inodo(ninodo, ultimoBLogico,0);
+            if (bloque != -1)
+            {
+                bread(bloque, buf_bloque);
+                memcpy (buf_original + (nbytes - desp2 - 1), buf_bloque, desp2 + 1);
+            }
+            leidos += desp2+1;  
+        }
+        leer_inodo(ninodo, &inodo);
+        localtime(&inodo.atime);
+        escribir_inodo(ninodo, inodo);
+        return leidos;
     }
     else
     {
-
-        int aux = bread(bloquef, buf_bloque);
-        if (aux == -1)
-        {
-            perror("Error");
-            return -1;
-        }
-
-        // Si el archivo es menor que el tamaño de un bloque.
-        if (bloqueLI == bloqueLF)
-        {
-            // Copiamos el contenido de buf_original en el buf_bloque.
-            memcpy(buf_original, buf_bloque + desp1, nbytes);
-        }
-        else
-        {
-            // Copiamos el contenido de buf_original en el buf_bloque.
-            memcpy(buf_original, buf_bloque + desp1, BLOCKSIZE - desp1);
-        }
-
-        // Escribe el bloque en el disco virtual.
-
-        if (bloqueLI == bloqueLF)
-        {
-            leidos = (aux - desp1) - (BLOCKSIZE - desp1 - nbytes);
-        }
-        else
-        {
-            leidos = aux - desp1;
-        }
-    }
-    // Caso en que el archivo vaya a ocupar mas de un bloque.
-    if (bloqueLI != bloqueLF)
-    {
-        // Tratamiento bloques intermedios.
-        int i = bloqueLI + 1;
-
-        while (bloqueLF > i)
-        {
-            // Obtiene el bloque fisico intermedio en el arcivo.
-            bloquef = traducir_bloque_inodo(ninodo, i, 0);
-            if (bloquef == -1)
-            {
-                leidos = leidos + BLOCKSIZE;
-            }
-            else
-            {
-
-                // Escribe el bloque intermiedio en el disco virtual.
-                int aux = bread(bloquef, buf_bloque);
-                if (aux == -1)
-                {
-                    perror("Error");
-                    return -1;
-                }
-                memcpy( buf_original + (BLOCKSIZE - desp1) +
-                                      (i - bloqueLI - 1) * BLOCKSIZE, buf_bloque, BLOCKSIZE);
-                leidos = leidos + aux;
-                
-            }
-            i = i + 1;
-        }
-        // Obtiene el bloque fisico final.
-        bloquef = traducir_bloque_inodo(ninodo, bloqueLF, 0);
-
-        if (bloquef == -1)
-        {
-            leidos = leidos + BLOCKSIZE;
-        }
-        else
-        {
-
-            // Escribe el buffer en el bloque fisico.
-            int aux = bread(bloquef, buf_bloque);
-            if (aux == -1)
-            {
-                perror("Error");
-                return -1;
-            }
-            // Copia los bytes pertinentes en el buffer del bloque.
-            memcpy(buf_original + (nbytes - desp2 - 1), buf_bloque, desp2 + 1);
-            leidos = leidos + desp2 + 1;
-        }
-    }
-    // Lee el inodo despues de la operacion de escritura del archivo.
-    if (leer_inodo(ninodo, &inodo))
-    {
-        perror("Error");
+        printf("No tienes permisos de lectura");
         return -1;
     }
-
-    // Actualiza el tiempo de modificacion en la zona de datos.
-    inodo.atime = time(NULL);
-
-    // Escribe el inodo en el disco virtual.
-    if (escribir_inodo(ninodo, inodo))
-    {
-        perror("Error");
-        return -1;
-    }
-    return leidos;
+    
 }
 
 /* Funcion: mi_stat_f:
