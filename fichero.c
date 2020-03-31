@@ -175,13 +175,13 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
     // Lee el inodo.
     if (leer_inodo(ninodo, &inodo))
     {
-        perror("Error: ");
+        perror("Error");
         return leidos;
     }
     // Comprueba si los permisos permiten leer.
     if ((inodo.permisos & 4) != 4)
     {
-        perror("Error: ");
+        perror("Error");
         return leidos;
     }
     // Evita que la lectura sobrepase la longitud del archivo.
@@ -210,7 +210,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         {
             if (bread(bloquef, buffer) == -1)
             {
-                perror("Error: ");
+                perror("Error");
                 return leidos;
             }
 
@@ -226,7 +226,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         {
             if (bread(bloquef, buffer) == -1)
             {
-                perror("Error: ");
+                perror("Error");
                 return leidos;
             }
             memcpy(buf_original, buffer + desp1, BLOCKSIZE - desp1);
@@ -242,7 +242,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
                 if (bread(bloquef, buf_original + (BLOCKSIZE - desp1) +
                                        (i - bloqueLI - 1) * BLOCKSIZE) == -1)
                 {
-                    perror("Error: ");
+                    perror("Error");
                     return leidos;
                 }
             }
@@ -256,7 +256,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
         {
             if (bread(bloquef, buffer) == -1)
             {
-                perror("Error: ");
+                perror("Error");
                 return leidos;
             }
             memcpy(buf_original + (nbytes - desp2 - 1), buffer, desp2 + 1);
@@ -266,13 +266,13 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
 
     if (leer_inodo(ninodo, &inodo))
     {
-        perror("Error: ");
+        perror("Error");
         return leidos;
     }
     inodo.atime = time(NULL);
     if (escribir_inodo(ninodo, inodo))
     {
-        perror("Error: ");
+        perror("Error");
         return leidos;
     }
     return leidos;

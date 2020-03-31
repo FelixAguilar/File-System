@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
     bread(0, &SB);
 
     int offset = 0;
-    int tamBuffer = 1300;
+    int tamBuffer = 1500;
     char buffer[tamBuffer];
     memset(buffer, 0, tamBuffer);
     int bytes = 0;
