@@ -47,6 +47,10 @@ int main(int argc, char const *argv[])
     sprintf(aux, "%d", inodo.tamEnBytesLog);
     write(2, aux, sizeof(int));
    */
+    
+    printf("%d", liberar_inodo(ninodo));
+
+    leer_inodo(ninodo, &inodo);
 
     // printf("bytes: %d, tamEnBytesLog: %d\n", bytes, inodo.tamEnBytesLog);
     bumount();
