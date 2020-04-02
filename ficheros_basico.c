@@ -1023,20 +1023,13 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
                     {
                         liberar_bloque(ptr);
                         printf("nBL: %d\n", nBL);
-                        // No procesa bloques de punteros vacios. (MODIFICAR !!!!!!!!!!!!!!!!!!!!!!) <-----------------------------
-                        /* if ((nivel_punteros == 0))
-                        {
-                            nBL = NPUNTEROS - indices[0] + nBL;
+                        //
+                        switch (nivel_punteros){
+                            case 0: nblog += NPUNTEROS - indices[nivel_punteros]-1; break;
+                            case 1: nblog += NPUNTEROS * (NPUNTEROS - indices[nivel_punteros])-1; break;
+                            case 2: nblog += (NPUNTEROS * NPUNTEROS) * (NPUNTEROS - indices[nivel_punteros])-1; break;
+                            default: break;
                         }
-                        else if ((nivel_punteros == 1))
-                        {
-                            nBL = NPUNTEROS * (NPUNTEROS - indices[1]) + nBL;
-                        }
-                        else if ((nivel_punteros == 2))
-                        {
-                            nBL = (NPUNTEROS * NPUNTEROS) * (NPUNTEROS - indices[2]) + nBL;
-                        }
-*/
                         // printf("nBL: %d\n", nBL);
                         liberados++;
                         nivel_punteros++;
