@@ -248,7 +248,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset, unsi
             }
             leidos += BLOCKSIZE;
         }
-        
+
         bloquef = traducir_bloque_inodo(ninodo, bloqueLF, 0);
 
         // Lee el último bloque.
@@ -339,4 +339,64 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
     }
 
     return EXIT_SUCCESS;
+}
+
+int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
+{
+    struct inodo inodo;
+    int primerBL;
+
+    if (leer_inodo(ninodo, &inodo))
+    {
+        perror("Error");
+        return EXIT_FAILURE;
+    }
+
+    if ((inodo.permisos & 2) != 2)
+    {
+        perror("Error");
+        return -1;
+    }
+    if (!(nbytes % BLOCKSIZE))
+    {
+        primerBL = nbytes / BLOCKSIZE;
+    }
+    else
+    {
+        primerBL = nbytes / BLOCKSIZE + 1;
+    }
+
+    int liberados = liberar_bloques_inodo(primerBL, &inodo);
+
+    inodo.numBloquesOcupados = liberados - inodo.numBloquesOcupados;
+
+    inodo.tipo = 'l';
+    inodo.tamEnBytesLog = nbytes;
+
+    inodo.mtime = time(NULL);
+    inodo.ctime = time(NULL);
+
+    struct superbloque SB;
+    if (bread(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+
+    inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
+    SB.posPrimerInodoLibre = ninodo;
+    SB.cantInodosLibres++;
+
+    if (escribir_inodo(ninodo, inodo))
+    {
+        perror("Error");
+        return -1;
+    }
+
+    if (bwrite(SBPOS, &SB) == -1)
+    {
+        perror("Error");
+        return -1;
+    }
+    return liberados;
 }
