@@ -3,10 +3,10 @@ CC=gcc
 CFLAGS=-c -g -Wall -std=gnu99
 #LDFLAGS=-pthread
 
-SOURCES=bloques.c mi_mkfs.c ficheros_basico.c fichero.c leer_sf.c escribir.c leer.c permitir.c borrar.c truncar.c #todos los .c
+SOURCES=bloques.c mi_mkfs.c ficheros_basico.c fichero.c leer_sf.c escribir.c leer.c permitir.c truncar.c #todos los .c
 LIBRARIES=bloques.o ficheros_basico.o fichero.o #todos los .o de la biblioteca del SF
 INCLUDES=bloques.h ficheros_basico.h fichero.h #todos los .h
-PROGRAMS=mi_mkfs leer_sf escribir leer permitir borrar truncar
+PROGRAMS=mi_mkfs leer_sf escribir leer permitir truncar
 OBJS=$(SOURCES:.c=.o)
 
 all: $(OBJS) $(PROGRAMS)
