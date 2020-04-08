@@ -1,34 +1,26 @@
+// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
 #include "bloques.h"
 
-static int descriptor; // Descriptor del archivo usado como disco virtual.
+static int descriptor; // Descriptor del archivo utilizado como disco virtual.
 
-/* Funcion: bmount
-* ---------------
+/* Función: bmount:
+* -----------------
 * Esta función obtiene el descriptor del fichero pasado por parámetro con la 
-* llamada al sistema open() y lo devuelve si no ha habido error. En caso de que
-* se produzca un error sale con EXIT_FAILURE. Si no existe el fichero lo crea
-* y si ya existe lo abre en modo lectura/escritura.
+* llamada al sistema open(). Si no existe el fichero lo crea y si ya existe lo 
+* abre en modo lectura/escritura.
 * 
-* camino: nombre del fichero.
+*  camino: dirección del fichero del dispositivo virtual.
 *
-* returns: descriptor o EXIT_FAILURE si se produce un error al intentar abrir el fichero.
+* returns: descriptor o -1 si se produce un error al intentar abrir el fichero.
 */
 int bmount(const char *camino)
 {
     descriptor = open(camino, O_RDWR | O_CREAT, 0666);
-    if (descriptor == -1)
-    {
-        fprintf(stderr, "%s", strerror(errno));
-        return EXIT_FAILURE;
-    }
-    else
-    {
-        return descriptor;
-    }
+    return descriptor;
 }
 
-/* Funcion: bread
- * --------------
+/* Función: bread:
+ * ---------------
  * Lee del dispositivo virtual el bloque especificado por nbloque y copia su 
  * contenido en el buffer apuntado por *buf.
  * 
@@ -44,50 +36,40 @@ int bread(unsigned int nbloque, void *buf)
     {
         if (lseek(descriptor, nbloque * BLOCKSIZE, SEEK_SET) != -1)
         {
-            // Si ha sido posible, lee el contenido a partir de este bloque
+
+            // Si ha sido posible, lee el contenido a partir de este bloque.
             size_t bytes = read(descriptor, buf, BLOCKSIZE);
             if (bytes != -1)
             {
+
                 // Si no hubo errores, devuelve el numero de bytes leidos.
                 return bytes;
             }
-            else
-            {
-                // Si no, devuelve el error que ha ocurrido.
-                fprintf(stderr, "%s", strerror(errno));
-            }
-        }
-        else
-        {
-            fprintf(stderr, "%s", strerror(errno));
-        }
+        }    
     }
     return -1;
 }
 
-/* Funcion: bwrite
-* ---------------
-* Esta función permite escribir el contenido de buf en un fichero, concretamen
-* te en el bloque especificado por el parámetro nbloque. En el caso de que no
-* haya error, la función devuelve el número de bytes que se han podido escribir.
-* Si hay error el programa sale con -1.
+/* Funcion: bwrite:
+* -----------------
+* Esta función permite escribir el contenido de buf en un fichero, en concreto
+* en el bloque especificado por el parámetro nbloque.
 * 
-* nboque: bloque lógico en el que se quiere escribir
-* buf: puntero al contenido que se quiere escribir en nbloque.
-*
+*  nboque: bloque lógico en el que se quiere escribir.
+*  buf: puntero al contenido que se quiere escribir en nbloque.
 *
 * returns: bytes o -1 si ha ocurrido un error.
 */
 int bwrite(unsigned int nbloque, const void *buf)
 {
     size_t bytes;
+
     // Posicionamos el cursor en el bloque donde queremos escribir.
     if (lseek(descriptor, nbloque * BLOCKSIZE, SEEK_SET) != -1)
     {
         bytes = write(descriptor, buf, BLOCKSIZE);
         if (bytes < 0)
         {
-            fprintf(stderr, "%s", strerror(errno));
             return -1;
         }
         else
@@ -97,14 +79,13 @@ int bwrite(unsigned int nbloque, const void *buf)
     }
     else
     {
-        fprintf(stderr, "%s", strerror(errno));
         return -1;
     }
 }
 
 /*
-* Function:  bumount
-* --------------------
+* Function: bumount:
+* ------------------
 * Libera el descriptor de ficheros con la función close() 
 *
 *  returns: devuelve EXIT_SUCCESS si se ha cerrado el fichero correctamente y 
@@ -116,7 +97,7 @@ int bumount()
     {
         return EXIT_SUCCESS;
     }
+
     // Si no, devuelve el error que ha ocurrido.
-    fprintf(stderr, "%s", strerror(errno));
     return EXIT_FAILURE;
 }

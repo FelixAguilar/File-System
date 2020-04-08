@@ -1025,9 +1025,9 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
                         printf("nBL: %d\n", nBL);
                         //
                         switch (nivel_punteros){
-                            case 0: nblog += NPUNTEROS - indices[nivel_punteros]-1; break;
-                            case 1: nblog += NPUNTEROS * (NPUNTEROS - indices[nivel_punteros])-1; break;
-                            case 2: nblog += (NPUNTEROS * NPUNTEROS) * (NPUNTEROS - indices[nivel_punteros])-1; break;
+                            case 0: nBL += NPUNTEROS - indices[nivel_punteros]-1; break;
+                            case 1: nBL += NPUNTEROS * (NPUNTEROS - indices[nivel_punteros])-1; break;
+                            case 2: nBL += (NPUNTEROS * NPUNTEROS) * (NPUNTEROS - indices[nivel_punteros])-1; break;
                             default: break;
                         }
                         // printf("nBL: %d\n", nBL);
