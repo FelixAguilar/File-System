@@ -1,4 +1,4 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "bloques.h"
 
 static int descriptor; // Descriptor del archivo utilizado como disco virtual.
@@ -42,7 +42,7 @@ int bread(unsigned int nbloque, void *buf)
             if (bytes != -1)
             {
 
-                // Si no hubo errores, devuelve el numero de bytes leidos.
+                // Si no hubo errores, devuelve el número de bytes leídos.
                 return bytes;
             }
         }    
@@ -50,7 +50,7 @@ int bread(unsigned int nbloque, void *buf)
     return -1;
 }
 
-/* Funcion: bwrite:
+/* Función: bwrite:
 * -----------------
 * Esta función permite escribir el contenido de buf en un fichero, en concreto
 * en el bloque especificado por el parámetro nbloque.

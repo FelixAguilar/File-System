@@ -1,4 +1,4 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno.
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno.
 #include <stdlib.h>
 #include "ficheros_basico.h"
 
@@ -9,7 +9,7 @@
 *  argc: número de argumentos introducidos por el usuario.
 *  argsv: array de strings de argumentos introducidos por el usuario.
 *
-* return: devuelve Exit_Success o si ha habido un error Exit_Failure.
+* return: devuelve Exit_Success o Exit_Failure si ha habido un error.
 */
 int main(int argc, char const *argv[])
 {

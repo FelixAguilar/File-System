@@ -1,4 +1,4 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "ficheros_basico.h"
 
 /*
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     int nBloques = atoi(argv[2]);
     int ninodos = nBloques / 4;
 
-    // Generación de buffer de zeros tamaño bloque.
+    // Generación de buffer de ceros tamaño bloque.
     unsigned char buf[BLOCKSIZE];
     memset(buf, 0, BLOCKSIZE);
 

@@ -1,7 +1,7 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "ficheros_basico.h"
 
-/* Funcion: tamMB:
+/* Función: tamMB:
 * ----------------
 * Devuelve el tamaño del espacio de disco ocupado por el mapa de bits en 
 * bloques según el número de bloques en el disco.
@@ -24,7 +24,7 @@ int tamMB(unsigned int nbloques)
     }
 }
 
-/* Funcion: tamAI:
+/* Función: tamAI:
 * ----------------
 * Esta función determina el tamaño del array de inodos en bloques.
 * 
@@ -47,7 +47,7 @@ int tamAI(unsigned int ninodos)
     }
 }
 
-/* Funcion: initSB:
+/* Función: initSB:
 * -----------------
 * Esta función inicializa las variables contenidas en el struct que forma el 
 * superbloque.
@@ -108,12 +108,12 @@ int initSB(unsigned int nbloques, unsigned int ninodos)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: initMB:
+/* Función: initMB:
 * -----------------
-* Esta funcion inicia el mapa de bits del disco, actualizando los bloques del
+* Esta función inicia el mapa de bits del disco, actualizando los bloques del
 * que pertenecen al mapa con el valor 0.
 *
-* returns: Exit_failure si ha habido algun problema o bien Exit_success si ha 
+* returns: Exit_failure si ha habido algún problema o bien Exit_success si ha 
 *          sido correcto. 
 */
 int initMB()
@@ -132,7 +132,7 @@ int initMB()
         return EXIT_FAILURE;
     }
 
-    // Pone todas las posiciones del bufer a cero.
+    // Pone todas las posiciones del buffer a cero.
     memset(buffer, 0, BLOCKSIZE);
 
     // Itera tantas veces como bloques haya en el mapa de bits del disco.
@@ -168,7 +168,7 @@ int initMB()
     return EXIT_SUCCESS;
 }
 
-/* Funcion: intAI:
+/* Función: intAI:
 * ----------------
 * Esta función inicializa la lista de inodos libres.
 *
@@ -225,14 +225,14 @@ int initAI()
     return EXIT_SUCCESS;
 }
 
-/* Funcion: escribir_bit:
+/* Función: escribir_bit:
 * -----------------------
-* Esta funcion permite modificar el valor de un bit del mapa de bits del disco.
+* Esta función permite modificar el valor de un bit del mapa de bits del disco.
 *
-*  nbloque: bloque que queremos indicar si esta libre u ocupado.
+*  nbloque: bloque que queremos indicar si está libre u ocupado.
 *  bit: valor del bit que queremos escribir.
 *
-* return: EXIT_SUCCESS si se ha podido escribir el bit sino EXIT_FAILURE.
+* return: EXIT_SUCCESS si se ha podido escribir el bit, si no EXIT_FAILURE.
 */
 int escribir_bit(unsigned int nbloque, unsigned int bit)
 {
@@ -257,17 +257,17 @@ int escribir_bit(unsigned int nbloque, unsigned int bit)
         return EXIT_FAILURE;
     }
 
-    // Leer del disco el bloque donde esta el bit.
+    // Leer del disco el bloque donde está el bit.
     if (bread(nbloqueabs, bufferMB) == -1)
     {
         free(bufferMB);
         return EXIT_FAILURE;
     }
 
-    // Calcula la posicion del byte dentro del bloque.
+    // Calcula la posición del byte dentro del bloque.
     posbyte = posbyte % BLOCKSIZE;
 
-    //Genera la mascara para modificar el bit indicado por parametro.
+    //Genera la máscara para modificar el bit indicado por parámetro.
     unsigned char mascara = 128;
     mascara >>= posbit;
 
@@ -294,11 +294,11 @@ int escribir_bit(unsigned int nbloque, unsigned int bit)
 
 /* Function: leer_bit:
 * --------------------
-* Esta funcion permite leer el valor de un bit del mapa de bits del disco.
+* Esta función permite leer el valor de un bit del mapa de bits del disco.
 *
-*  nbloque: bloque que queremos saber si esta libre u ocupado.
+*  nbloque: bloque que queremos saber si está libre u ocupado.
 *
-* return: Valor del bit leido o bien -1 si se ha producido un error.
+* return: Valor del bit leído o bien -1 si se ha producido un error.
 */
 unsigned char leer_bit(unsigned int nbloque)
 {
@@ -322,21 +322,21 @@ unsigned char leer_bit(unsigned int nbloque)
         return EXIT_FAILURE;
     }
 
-    // Lee del disco el bloque donde esta el bit.
+    // Lee del disco el bloque donde está el bit.
     if (bread(nbloqueabs, bufferMB) == -1)
     {
         free(bufferMB);
         return EXIT_FAILURE;
     }
 
-    // Calcula la posicion del byte dentro del bloque.
+    // Calcula la posición del byte dentro del bloque.
     posbyte = posbyte % BLOCKSIZE;
 
-    // Genera la mascara para modificar el bit indicado por parametro.
+    // Genera la máscara para modificar el bit indicado por parámetro.
     unsigned char mascara = 128;
     mascara >>= posbit;
 
-    // Obtiene el bit del bloque que se ha indicado por parametro.
+    // Obtiene el bit del bloque que se ha indicado por parámetro.
     mascara &= bufferMB[posbyte];
     mascara >>= (7 - posbit);
 
@@ -344,12 +344,12 @@ unsigned char leer_bit(unsigned int nbloque)
     return mascara;
 }
 
-/* Funcion: reservar_bloque:
+/* Función: reservar_bloque:
 * --------------------------
-* Esta funcion reserva un bloque para ser usado si encuentra uno libre en el 
+* Esta función reserva un bloque para ser usado si encuentra uno libre en el 
 * mapa de bit.
 *
-* returns: Devuelve el numero de bloque si se ha podido reservar, si no -1.
+* returns: Devuelve el número de bloque si se ha podido reservar, si no -1.
 */
 int reservar_bloque()
 {
@@ -373,7 +373,7 @@ int reservar_bloque()
         return -1;
     }
 
-    // Reserva espacio de memoria para la mascara del bloque
+    // Reserva espacio de memoria para la máscara del bloque
     unsigned char *bufferAux = malloc(sizeof(char) * BLOCKSIZE);
     if (!bufferAux)
     {
@@ -381,7 +381,7 @@ int reservar_bloque()
         return -1;
     }
 
-    // Se inicia la mascara con todos los bits a 1.
+    // Se inicia la máscara con todos los bits a 1.
     memset(bufferAux, 255, BLOCKSIZE);
 
     // Declarar las variables y las inicializa.
@@ -399,7 +399,7 @@ int reservar_bloque()
         return -1;
     }
 
-    // Itera por todos los bloques de MB hasta encontrar uno con algun bit a 0.
+    // Itera por todos los bloques de MB hasta encontrar uno con algún bit a 0.
     while (!memcmp(bufferMB, bufferAux, BLOCKSIZE) && posBloqueMB <
                                                           SB.posUltimoBloqueMB)
     {
@@ -414,7 +414,7 @@ int reservar_bloque()
 
     free(bufferAux);
 
-    // Localizar el byte en el que se encuentra el bloque vacio.
+    // Localizar el byte en el que se encuentra el bloque vacío.
     while (posbyte <= BLOCKSIZE && bufferMB[posbyte] == 255)
     {
         posbyte++;
@@ -427,7 +427,7 @@ int reservar_bloque()
         bufferMB[posbyte] <<= 1;
     }
 
-    // Determina la posicion del bloque libre y liberamos el bufferMB.
+    // Determina la posición del bloque libre y liberamos el bufferMB.
     nbloque = ((posBloqueMB - SB.posPrimerBloqueMB) * BLOCKSIZE + posbyte) *
                   8 +
               posbit;
@@ -448,14 +448,14 @@ int reservar_bloque()
         return -1;
     }
 
-    // Reserva espacio de memoria para la mascara del bloque
+    // Reserva espacio de memoria para la máscara del bloque
     bufferAux = malloc(sizeof(char) * BLOCKSIZE);
     if (!bufferAux)
     {
         return -1;
     }
 
-    // Se inicia la mascara con todos los bits a 0.
+    // Se inicia la máscara con todos los bits a 0.
     memset(bufferAux, 0, BLOCKSIZE);
 
     // Pone a 0s el bloque reservado en el disco.
@@ -469,13 +469,13 @@ int reservar_bloque()
     return nbloque;
 }
 
-/* Funcion: liberar_bloque:
+/* Función: liberar_bloque:
 * -------------------------
-* Esta funcion libera el bloque indicado por parametro.
+* Esta función libera el bloque indicado por parámetro.
 *
 *  nbloque: bloque a liberar.
 *
-* return: numero de bloque liberado sino -1.
+* return: número de bloque liberado sino -1.
 */
 int liberar_bloque(unsigned int nbloque)
 {
@@ -510,12 +510,12 @@ int liberar_bloque(unsigned int nbloque)
     return nbloque;
 }
 
-/* Funcion: escribir_inodo:
+/* Función: escribir_inodo:
 * -------------------------
-* Esta funcion permite escribir un inodo en el disco en la posicion indicada 
-* por parametro.
+* Esta función permite escribir un inodo en el disco en la posición indicada 
+* por parámetro.
 *
-*  ninodo: posicion del inodo en el array de inodos.
+*  ninodo: posición del inodo en el array de inodos.
 *  inodo: inodo que se quiere escribir en el disco.
 *
 * return: EXIT_SUCCESS si ha podido realizarlo, si no EXIT_FAILURE.
@@ -552,12 +552,12 @@ int escribir_inodo(unsigned int ninodo, struct inodo inodo)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: leer_inodo:
+/* Función: leer_inodo:
 * ---------------------
-* Esta funcion permite leer un inodo en el disco en la posicion indicada por 
-* parametro.
+* Esta función permite leer un inodo en el disco en la posición indicada por 
+* parámetro.
 * 
-*  ninodo: posicion del inodo en el array de inodos.
+*  ninodo: posición del inodo en el array de inodos.
 *  inodo: puntero al buffer del inodo.
 *
 * return: EXIT_SUCCESS si ha podido realizarlo, si no EXIT_FAILURE.
@@ -587,14 +587,14 @@ int leer_inodo(unsigned int ninodo, struct inodo *inodo)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: reservar_inodo:
+/* Función: reservar_inodo:
 * -------------------------
-* Esta funcion permite reservar un inodo que este libre para su uso.
+* Esta función permite reservar un inodo que está libre para su uso.
 *
 *  tipo: tipo de archivo a apuntar por este.
 *  permisos: tipo de permisos que tendra este archivo.
 *
-* return: la posicion del inodo o -1 si se ha producido algun error.
+* return: la posición del inodo o -1 si se ha producido algún error.
 */
 int reservar_inodo(unsigned char tipo, unsigned char permisos)
 {
@@ -658,14 +658,14 @@ int reservar_inodo(unsigned char tipo, unsigned char permisos)
     return posInodoReservado;
 }
 
-/* Funcion: obtener_nrangoBL:
+/* Función: obtener_nrangoBL:
 * ---------------------------
-* Esta funcion permite obtener el rango de punteros en el que se situa el 
-* bloque logico indicado por parametro. Ademas obtiene la direccion almacenada 
+* Esta función permite obtener el rango de punteros en el que se situa el 
+* bloque lógico indicado por parámetro. Ademas obtiene la direccion almacenada 
 * en el puntero correspondiente del inodo.
 *
 *  inodo: inodo que contiene los punteros del nivel actual.
-*  nblogico: la posicion logica del bloque en el inodo.
+*  nblogico: la posición lógica del bloque en el inodo.
 *  ptr: puntero al siguiente nivel de la estructura del archivo.
 *
 * return: Devuelve el nivel en el que se encuentra el bloque o bien -1.
@@ -698,15 +698,15 @@ int obtener_nrangoBL(struct inodo inodo, unsigned int nblogico, int *ptr)
     return -1;
 }
 
-/* Funcion: obtener_indice:
+/* Función: obtener_indice:
 * -------------------------
-* Esta funcion permite generalizar la obtencion de los indices de los 
+* Esta función permite generalizar la obtención de los índices de los 
 * bloques de punteros.
 * 
-*  nblogicos: la posicion logica del bloque en el inodo.
-*  nivel_punteros: nivel en el inodo que se encuentra la funcion.
+*  nblogicos: la posición lógica del bloque en el inodo.
+*  nivel_punteros: nivel en el inodo que se encuentra la función.
 *
-* return: devuelve el indice del bloque del nivel inferior o bien -1 si error.
+* return: devuelve el índice del bloque del nivel inferior o bien -1 si error.
 */
 int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros)
 {
@@ -762,16 +762,16 @@ int obtener_indice(unsigned int nblogico, unsigned int nivel_punteros)
     return -1;
 }
 
-/* Funcion: traducir_bloque_inodo:
+/* Función: traducir_bloque_inodo:
 * --------------------------------
-* Esta funcion se encarga de obtener el numero de bloque fisico correspondiente
-* a un bloque logico determinado del inodo indicado.
+* Esta función se encarga de obtener el número de bloque físico correspondiente
+* a un bloque lógico determinado del inodo indicado.
 *
-*  ninodo: es el numero de inodo en el array de inodos.
-*  nblogico: es la posicion logioca del bloque en el inodo.
+*  ninodo: es el número de inodo en el array de inodos.
+*  nblogico: es la posición logica del bloque en el inodo.
 *  reservar: indica si hay que reservar y leer un bloque (1) o solo leerlo (0).
 *
-* return: Devuelve la posicion fisica del bloque leido o bien leido y resevado.
+* return: Devuelve la posición fisica del bloque leido o bien leido y resevado.
 */
 int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico,
                           char reservar)
@@ -784,7 +784,7 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico,
         return -1;
     }
 
-    // Declaracion variables para la búsqueda de la dirección física.
+    // Declaración variables para la búsqueda de la dirección física.
     int ptr = 0;
     int ptr_ant = 0;
     int salvar_inodo = 0;
@@ -969,8 +969,9 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
     int ptr = 0;
     int nBL;
     int bloques_punteros[3][NPUNTEROS];
-    // guardamos historial de indices y punteros que fuimos recorriendo para poder
-    // volver atras (después de llegar al final) y marcarlos como libres.
+
+    /* Guardamos historial de indices y punteros que fuimos recorriendo para 
+    poder volver atras (después de llegar al final) y marcarlos como libres. */
     int ptr_nivel[3];
     int indices[3];
     int liberados = 0;

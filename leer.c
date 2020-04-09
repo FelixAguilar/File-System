@@ -1,4 +1,4 @@
-// Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include <stdlib.h>
 #include "fichero.h"
 
@@ -7,7 +7,7 @@
 * Lee el contenido de un inodo y permite mostrarlo por pantalla o bien 
 * redirigirlo a un fichero.
 *
-* returns: Exit_Success si se produce un error Exit_Failure.
+* returns: Exit_Success o si se produce un error Exit_Failure.
 */
 int main(int argc, char const *argv[])
 {
@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
     // Mientras lea contenido del archivo realizamos el bucle.
     while (leidos > 0)
     {
-        // Actualiza el numero de bytes leidos.
+        // Actualiza el número de bytes leidos.
         bytes = bytes + leidos;
 
         // Escribe el contenido del buffer en el destino indicado.
@@ -71,7 +71,7 @@ int main(int argc, char const *argv[])
         return EXIT_FAILURE;
     }
 
-    // Muestra el numero de bytes leidos y el tamaño en bytes logicos.
+    // Muestra el número de bytes leídos y el tamaño en bytes lógicos.
     fprintf(stderr, "total_leidos: %d\ntamEnBytesLog: %d\n", bytes,
             inodo.tamEnBytesLog);
 

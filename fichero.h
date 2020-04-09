@@ -1,4 +1,4 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include <stdio.h>           // printf(), fprintf(), stderr, stdout, stdin.
 #include <stdlib.h>          // exit(), EXIT_SUCCESS, EXIT_FAILURE, atoi().
 #include <unistd.h>          // read(), write(), open(), close(), lseek().
@@ -17,7 +17,7 @@ struct STAT
     time_t mtime; // Fecha y hora de la última modificación de datos: mtime.
     time_t ctime; // Fecha y hora de la última modificación del inodo: ctime.
 
-    unsigned int nlinks;        // Numero de enlaces de entradas en directorio.
+    unsigned int nlinks;        // Número de enlaces de entradas en directorio.
     unsigned int tamEnBytesLog; // Tamaño en bytes lógicos.
     unsigned int numBloquesOcupados;
 };

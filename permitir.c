@@ -1,14 +1,14 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include <stdlib.h>
 #include "fichero.h"
 
 /* Fichero: permitir.c:
 * ---------------------
-* Cambia los permisos del inodo indicado por parametro por los permisos tambien
-* indicados por parametro.
+* Cambia los permisos del inodo indicado por parámetro por los permisos también
+* indicados por parámetro.
 *
-*  argc: Número de parametros introducidos en la ejecución.
-*  argv: Array de strings con los parametros indicados por consola.
+*  argc: número de parámetros introducidos en la ejecución.
+*  argv: array de strings con los parámetros indicados por consola.
 *
 * return Exit_Success o si se ha producido un error Exit_Failure.
 */
@@ -22,7 +22,7 @@ int main(int argc, char const *argv[])
         return EXIT_FAILURE;
     }
 
-    // Obtiene los valores de los parametros.
+    // Obtiene los valores de los parámetros.
     int ninodo = atoi(argv[2]);
     char permisos = (*argv[3]);
 
@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
         return EXIT_FAILURE;
     }
 
-    // Cambia los permisos del inodo introducido por parametro.
+    // Cambia los permisos del inodo introducido por parámetro.
     if (mi_chmod_f(ninodo, permisos))
     {
         fprintf(stderr, "Error con la modificacion de los permisos.\n");

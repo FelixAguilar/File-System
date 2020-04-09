@@ -1,16 +1,16 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include <stdlib.h>
 #include "fichero.h"
 
 /* Fichero: escribir.c:
 * ---------------------
-* Escribe el contenido de un buffer de memoria pasado por parametro dentro del
+* Escribe el contenido de un buffer de memoria pasado por parámetro dentro del
 * dispositivo virtual de almacenamiento.
 *
-*  argc: Número de argumentos del comando.
-*  argv: Array de strings con los argumentos introducidos junto al comando.
+*  argc: número de argumentos del comando.
+*  argv: array de strings con los argumentos introducidos junto al comando.
 *
-* returns: Exit_Success o si se ha producido un error devuelve Exit_Failure.
+* returns: Exit_Success, o Exit_Failure si se ha producido un error.
 */
 int main(int argc, char const *argv[])
 {

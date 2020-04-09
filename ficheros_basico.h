@@ -1,4 +1,4 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include <stdio.h>   // printf(), fprintf(), stderr, stdout, stdin.
 #include <stdlib.h>  // exit(), EXIT_SUCCESS, EXIT_FAILURE, atoi().
 #include <unistd.h>  // SEEK_SET, read(), write(), open(), close(), lseek().
@@ -8,7 +8,7 @@
 #include <time.h>    // para el guardado de tiempos.
 #include "bloques.h" // enlace a la libreria bloques.h.
 
-#define SBPOS 0                                       // posicion superbloque.
+#define SBPOS 0                                       // posición superbloque.
 #define SBSIZE 1                                      // tamaño superbloque.
 #define INODOSIZE 128                                 // bytes de un inodo.
 #define NPUNTEROS (BLOCKSIZE / sizeof(unsigned int))  // 256 punteros.
