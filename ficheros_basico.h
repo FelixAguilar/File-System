@@ -14,8 +14,8 @@
 #define NPUNTEROS (BLOCKSIZE / sizeof(unsigned int))  // 256 punteros.
 #define DIRECTOS 12                                   // punteros.
 #define INDIRECTOS0 (NPUNTEROS + DIRECTOS)            // 268 punteros.
-#define INDIRECTOS1 (pow(NPUNTEROS, 2) + INDIRECTOS0) // 65.804 punteros.
-#define INDIRECTOS2 (pow(NPUNTEROS, 3) + INDIRECTOS1) // 16.843.020 punteros.
+#define INDIRECTOS1 (NPUNTEROS * NPUNTEROS + INDIRECTOS0) // 65.804 punteros.
+#define INDIRECTOS2 (NPUNTEROS * NPUNTEROS * NPUNTEROS + INDIRECTOS1) // 16.843.020 punteros.
 
 struct superbloque
 {

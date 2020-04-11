@@ -12,7 +12,7 @@
 *
 * return Exit_Success o si se ha producido un error Exit_Failure.
 */
-int main(int argc, char const *argv[])
+int main(int argc, const char *argv[])
 {
     // Revisa que la sintaxis sea la correcta.
     if (argc < 3)
@@ -24,20 +24,12 @@ int main(int argc, char const *argv[])
 
     // Obtiene los valores de los parámetros.
     int ninodo = atoi(argv[2]);
-    char permisos = (*argv[3]);
+    unsigned char permisos = atoi(argv[3]);
 
     // Monta el dispositivo en el sistema.
     if (bmount(argv[1]) == -1)
     {
         fprintf(stderr, "Error montando el dispositivo en el sistema.\n");
-        return EXIT_FAILURE;
-    }
-
-    // Obtiene el superbloque del dispositivo.
-    struct superbloque SB;
-    if (bread(0, &SB) == -1)
-    {
-        fprintf(stderr, "Error con la lectura del superbloque.\n");
         return EXIT_FAILURE;
     }
 

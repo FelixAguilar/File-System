@@ -53,14 +53,37 @@ int main(int argc, char const *argv[])
     }
 
     // Lee el inodo liberado y muestra la metainformación.
-    struct STAT mi_stat;
-    if (mi_stat_f(ninodo, &mi_stat))
+    struct STAT p_stat;
+    if (mi_stat_f(ninodo, &p_stat))
     {
         fprintf(stderr, "Error al leer el inodo\n");
         return EXIT_FAILURE;
     }
-    fprintf(stderr, "tamEnBytesLog: %d, numBloquesOcupados: %d\n",
-            mi_stat.tamEnBytesLog, mi_stat.numBloquesOcupados);
+
+    // Variables utilizadas para cambiar el formato de la fecha y hora.
+    struct tm *ts;
+    char atime[80];
+    char mtime[80];
+    char ctime[80];
+
+    // Cambia el formato de la fecha y la hora de los campos del inodo.
+    ts = localtime(&p_stat.atime);
+    strftime(atime, sizeof(atime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&p_stat.mtime);
+    strftime(mtime, sizeof(mtime), "%a %Y-%m-%d %H:%M:%S", ts);
+    ts = localtime(&p_stat.ctime);
+    strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
+
+    // Muestra la información del inodo utilizado para la escritura.
+    printf("DATOS INODO %d:\n", ninodo);
+    printf("tipo=%c\n", p_stat.tipo);
+    printf("permisos=%d\n", p_stat.permisos);
+    printf("atime: %s\n", atime);
+    printf("ctime: %s\n", ctime);
+    printf("mtime: %s\n", mtime);
+    printf("nLinks = %d\n", p_stat.nlinks);
+    printf("tamEnBytesLog = %d\n", p_stat.tamEnBytesLog);
+    printf("numBloquesOcupados = %d\n\n", p_stat.numBloquesOcupados);
 
     // Desmonta el dispositivo.
     bumount();

@@ -380,23 +380,11 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
     int liberados = liberar_bloques_inodo(primerBL, &inodo);
 
     // Actualiza la información del inodo.
-    inodo.numBloquesOcupados = liberados - inodo.numBloquesOcupados;
+    inodo.numBloquesOcupados = inodo.numBloquesOcupados - liberados;
     inodo.tipo = 'l';
     inodo.tamEnBytesLog = nbytes;
     inodo.mtime = time(NULL);
     inodo.ctime = time(NULL);
-
-    // Lee el superbloque.
-    struct superbloque SB;
-    if (bread(SBPOS, &SB) == -1)
-    {
-        return -1;
-    }
-
-    // Añadimos el inodo a la lista de libres.
-    inodo.punterosDirectos[0] = SB.posPrimerInodoLibre;
-    SB.posPrimerInodoLibre = ninodo;
-    SB.cantInodosLibres++;
 
     // Escribe el inodo en el dispositivo.
     if (escribir_inodo(ninodo, inodo))
@@ -404,10 +392,5 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
         return -1;
     }
 
-    // Escribimos el superbloque en el dispositivo.
-    if (bwrite(SBPOS, &SB) == -1)
-    {
-        return -1;
-    }
     return liberados;
 }
