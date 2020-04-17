@@ -10,5 +10,6 @@ Equipo: NANI
      no contiene ningún otro puntero, no se realizan las iteraciones 
      pertenecientes a los bloques lógicos contenidos en este puntero. De esta
      forma, la ejecución evita iteraciones inútiles. 
-
+     Ya que esta operación cambia el número de bloque lógico, se utiliza una 
+     variable auxiliar para poder mostrar el número adecuado por pantalla.
     

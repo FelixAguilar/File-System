@@ -1099,12 +1099,13 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
             }
             else
             {
+                // Para reproducir la solución proporcionada, guarda nBL.
+                int auxnBL = nBL;
 
                 /* Si el bloque pertenece a un puntero indirecto, se itera todo 
                    el árbol .*/
                 while (nivel_punteros < nRangoBL)
                 {
-
                     /* Actualiza las variables utilizadas para eliminación de 
                        bloques. */
                     indice = indices[nivel_punteros];
@@ -1121,7 +1122,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
                         
                         /* Dependiendo del nivel de punteros donde se encuentre 
                            el algoritmo, saltará una cantidad determinada de 
-                           bloques lógicos . */
+                           bloques lógicos. */
                         switch (nivel_punteros)
                         {
                         case 0:
@@ -1140,7 +1141,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
                         default:
                             break;
                         }   
-
+                    
                         /* Actualiza el nivel de punteros y los bloques 
                            liberados. */
                         liberados++;
@@ -1148,7 +1149,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
 
                         printf("[liberar_bloques_inodo()-> liberado BF %d de p"
                                "unteros_nivel%d correspondiente al BL %d]\n",
-                               ptr, nivel_punteros, nBL);
+                               ptr, nivel_punteros, auxnBL);
 
                         /* Si el nivel de punteros coincide con el rango, 
                            modifica directamente el inodo. */

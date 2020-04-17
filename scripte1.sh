@@ -22,7 +22,7 @@ echo "#cambiamos permisos del inodo 1 a 0"
 echo "################################################################################"
 echo "$ ./leer disco 1"
 echo "#intentamos leer inodo 1 con permisos=0"
-./leer disco 2
+./leer disco 1
 echo "################################################################################"
 echo "$ ./permitir disco 1 6"
 echo "#cambiamos permisos del inodo 1 a 6"

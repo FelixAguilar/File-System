@@ -381,7 +381,10 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
 
     // Actualiza la información del inodo.
     inodo.numBloquesOcupados = inodo.numBloquesOcupados - liberados;
-    inodo.tipo = 'l';
+    if(!inodo.numBloquesOcupados)
+    {
+        inodo.tipo = 'l';
+    }
     inodo.tamEnBytesLog = nbytes;
     inodo.mtime = time(NULL);
     inodo.ctime = time(NULL);
