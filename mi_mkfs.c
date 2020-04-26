@@ -1,6 +1,5 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
-#include "ficheros_basico.h"
-
+#include "directorios.h"
 /*
 * Fichero: mi_mkfs.c:
 * -------------------

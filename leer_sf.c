@@ -1,7 +1,6 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno.
 #include <stdlib.h>
-#include "ficheros_basico.h"
-
+#include "fichero.h"
 /* Fichero: leer_sf.c:
 * --------------------
 * La ejecución de este fichero permite mostrar el contenido del superbloque.
