@@ -109,16 +109,15 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
             int numEntradaArray = 0;
             while (numEntradaArray < (BLOCKSIZE / sizeof(struct entrada)) &&
                    strcmp(entradas[numEntradaArray].nombre, inicial) && (numEntradaInodo < cantEntradasInodo))
-            {           
+            {
                 numEntradaArray++;
                 numEntradaInodo++;
-                
             }
             if (!strcmp(entradas[numEntradaArray].nombre, inicial))
             {
                 // entrada = entradas[numEntradaArray];
-                 strcpy(entrada.nombre, entradas[numEntradaArray].nombre);
-                 entrada.ninodo = entradas[numEntradaArray].ninodo;
+                strcpy(entrada.nombre, entradas[numEntradaArray].nombre);
+                entrada.ninodo = entradas[numEntradaArray].ninodo;
             }
         }
     }
@@ -232,4 +231,103 @@ void mostrar_error_buscar_entrada(int error)
         fprintf(stderr, "Error: No es un directorio.\n");
         break;
     }
+}
+
+int mi_creat(const char *camino, unsigned char permisos)
+{
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+
+    if (!(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, permisos)))
+    {
+        // error
+    }
+
+    return EXIT_SUCCESS;
+}
+
+/*
+int mi_dir(const char *camino, char *buffer)
+{
+    
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    struct inodo inodo;
+    struct entrada entradas[BLOCKSIZE / sizeof(struct entrada)];
+    int leidos;
+    int bytes = 0;
+    int offset = 0;
+    int tamEntrada = sizeof(struct entrada);
+
+    if (!(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, 0)))
+    {
+        // error
+    }
+
+    if (leer_inodo(p_inodo, &inodo))
+    {
+        // error
+    }
+
+    // Lee del fichero hasta llenar el buffer o bien llegar a fin de fichero.
+    leidos = mi_read_f(p_inodo, entradas, offset, tamEntrada);
+
+    
+    while (leidos > 0)
+    {
+        // Actualiza el número de bytes leidos.
+        bytes = bytes + leidos;
+
+        strncpy(buffer[strlen], entradas, leidos);
+        strncpy(strlen(buffer))
+
+            // Limpia el buffer de lectura, actualiza el offset y vuelve a leer.
+            memset(entradas, 0, tamEntrada);
+        offset = offset + tamEntrada;
+        leidos = mi_read_f(p_inodo, entradas, offset, tamEntrada);
+    }  
+}
+ */
+
+int mi_chmod(const char *camino, unsigned char permisos)
+{
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+
+    if (!(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, permisos)))
+    {
+        // error
+    }
+
+    if (!p_inodo)
+    {
+        // error
+    }
+
+    mi_chmod_f(p_inodo, permisos);
+    return EXIT_SUCCESS;
+}
+
+int mi_stat(const char *camino, struct STAT *p_stat)
+{
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+
+    if (!(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, 0)))
+    {
+        // error
+    }
+
+    if (!p_inodo)
+    {
+        // error
+    }
+
+    mi_stat_f(p_inodo, p_stat);
+    printf("Número de inodo: %d\n", p_inodo);
+    return EXIT_SUCCESS;
 }
