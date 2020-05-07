@@ -16,6 +16,8 @@ int main(int argc, char const *argv[])
         // error
     }
 
+    unsigned char permisos = atoi(argv[2]);
+
     // Monta el disco en el sistema.
     if (bmount(argv[1]) == -1)
     {
@@ -24,7 +26,7 @@ int main(int argc, char const *argv[])
     }
 
 
-    mi_chmod(argv[3], argv[2]);
+    mi_chmod(argv[3], permisos);
 
     bumount();
 

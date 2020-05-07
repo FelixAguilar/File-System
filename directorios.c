@@ -261,6 +261,11 @@ int mi_dir(const char *camino, char *buffer)
     int offset = 0;
     int tamEntrada = sizeof(struct entrada);
 
+    if(camino[strlen(camino) - 1] != '/')
+    {
+        // error
+    }
+
     if (!(buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1, 0)))
     {
         // error
@@ -289,7 +294,7 @@ int mi_dir(const char *camino, char *buffer)
         leidos = mi_read_f(p_inodo, entradas, offset, tamEntrada);
     }  
 }
- */
+*/
 
 int mi_chmod(const char *camino, unsigned char permisos)
 {
