@@ -12,6 +12,9 @@
 #define ERROR_NO_SE_PUEDE_CREAR_ENTRADA_EN_UN_FICHERO -7
 #define ERROR_PERMISO_ESCRITURA -5
 
+#define TAMFILA 100
+#define TAMBUFFER (TAMFILA*1000)
+
 struct entrada{
     char nombre[60];
     unsigned int ninodo;

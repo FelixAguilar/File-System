@@ -15,7 +15,9 @@ int main(int argc, char const *argv[])
         // error
     }
 
-    if ((strcmp(argv[3][strlen(argv[3] - 1)], "/")))
+    unsigned char permisos = atoi(argv[2]);
+
+    if ((argv[3][strlen(argv[3]) - 1] != '/'))
     {
         // Monta el disco en el sistema.
         if (bmount(argv[1]) == -1)
@@ -23,7 +25,9 @@ int main(int argc, char const *argv[])
             fprintf(stderr, "Error de montaje de disco.\n");
             return EXIT_FAILURE;
         }
-        mi_creat(argv[3], argv[2]);
+
+        mi_creat(argv[3], permisos);
+
         bumount();
     }
 }

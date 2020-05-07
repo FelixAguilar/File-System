@@ -38,7 +38,7 @@ int main(int argc, char const *argv[])
     strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
 
     printf("tipo: %c\n", p_stat.tipo);
-    printf("permisos: %c\n", p_stat.permisos);
+    printf("permisos: %d\n", p_stat.permisos);
 
     printf("atime: %s\n", atime);
     printf("mtime: %s\n", mtime);

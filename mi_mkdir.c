@@ -13,13 +13,15 @@ int main(int argc, char const *argv[])
 
     if (atoi(argv[2]) > 7)
     {
-        // error
+        fprintf(stderr, "Error: modo inválido: <<%s>>\n", argv[2]);
+        return EXIT_FAILURE;
     }
 
     unsigned char permisos = atoi(argv[2]);
 
-    if ((argv[3][strlen(argv[3] - 1)] == '/')) // revisar que sea correcto.
+    if ((argv[3][strlen(argv[3]) - 1] == '/')) // revisar que sea correcto.
     {
+
         // Monta el disco en el sistema.
         if (bmount(argv[1]) == -1)
         {
@@ -27,7 +29,6 @@ int main(int argc, char const *argv[])
             return EXIT_FAILURE;
         }
 
-        
         mi_creat(argv[3], permisos);
 
         bumount();

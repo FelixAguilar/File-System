@@ -833,19 +833,12 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico,
             if (nivel_punteros == nRangoBL)
             {
                 inodo.punterosIndirectos[nRangoBL - 1] = ptr;
-                printf("[Traducir_bloque_inodo()-> inodo.punterosIndirectos[%d"
-                       "] = %d (reservado BF %d para punteros_nivel%d)]\n",
-                       nRangoBL - 1, ptr, ptr, nivel_punteros);
             }
             else
             {
                 /* Si no, guardamos la dirección física del bloque de punteros 
                    en el nivel superior */
                 buffer[indice] = ptr;
-                printf("[Traducir_bloque_inodo()-> punteros_nivel%d [%d] = %d"
-                       "(reservado BF %d para punteros_nivel%d)]\n",
-                       nivel_punteros + 1, indice, ptr, ptr, nivel_punteros);
-
                 // Actualiza el bloque físico de punteros.
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
@@ -902,9 +895,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico,
             if (!nRangoBL)
             {
                 inodo.punterosDirectos[nblogico] = ptr;
-                printf("[Traducir_bloque_inodo()-> inodo.punterosDirectos[%d] "
-                       "= %d (reservado BF %d para BL %d)]\n",
-                       nblogico, ptr, ptr, nblogico);
             }
             else
             {
@@ -912,9 +902,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico,
                 /* Si se encuentra en alguno de los indirectos, lo guarda en el 
                    buffer de bloque de punteros adecuado. */
                 buffer[indice] = ptr;
-                printf("[Traducir_bloque_inodo()-> punteros_nivel%d [%d] = %d "
-                       "(reservado BF %d para BL %d)]\n",
-                       nivel_punteros + 1, indice, ptr, ptr, nblogico);
                 if (bwrite(ptr_ant, buffer) == -1)
                 {
                     return -1;
