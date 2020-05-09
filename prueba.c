@@ -7,7 +7,7 @@ void mostrar_buscar_entrada(char *camino, char reservar){
  int error;
  printf("\ncamino: %s, reservar: %d\n", camino, reservar);
  if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, reservar, 6)) < 0) {
-   mostrar_error_buscar_entrada(error);
+   mostrar_error_directorios(error);
  }
  printf("**\n");
  return;
