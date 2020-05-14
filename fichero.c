@@ -25,7 +25,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     // Comprueba si el inodo apunta a un archivo con permiso de escritura.
     if ((inodo.permisos & 2) != 2)
     {
-        fprintf(stderr, "Error no hay permisos de escritura\n");
         return -1;
     }
 
@@ -183,7 +182,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
     // Comprueba si los permisos permiten leer.
     if ((inodo.permisos & 4) != 4)
     {
-        fprintf(stderr, "Error no hay permisos de lectura\n");
         return leidos;
     }
 

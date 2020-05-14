@@ -1,6 +1,10 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "directorios.h"
 
+// Variable global para el último fichero escrito.
+struct UltimaEntrada UltimaEntradaEscritura;
+struct UltimaEntrada UltimaEntradaLectura;
+
 /* Función: extraer_camino:
 * -------------------------
 * Esta función descompone el camino indicado por parametro en dos, inicial y 
@@ -480,11 +484,115 @@ int mi_stat(const char *camino, struct STAT *p_stat)
     }
 
     // Obtencion de la metainformacion.
-    if(mi_stat_f(p_inodo, p_stat))
+    if (mi_stat_f(p_inodo, p_stat))
     {
         return ERROR_ACCESO_DISCO;
     }
     return EXIT_SUCCESS;
+}
+
+/* Funcion: mi_write:
+* ------------------
+* Esta función permite la escritura del contenido de un buffer en un archivo.
+*
+*  camino: direccion del archivo donde se va a escribir.
+*  buf: buffer con el contenido a escribir.
+*  offset: desplazamiento de bytes dentro del archivo.
+*  nbytes: tamaño en bytes de buffer.
+*
+* returns: número de bytes escritos o bien el error generado.         
+*/
+int mi_write(const char *camino, const void *buf, unsigned int offset,
+             unsigned int nbytes)
+{
+    // Inicializacion de las variables.
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    int error;
+    int bytes = 0;
+
+    // Revisa si este ha sido el último archivo accedido.
+    if (strcmp(camino, UltimaEntradaEscritura.camino))
+    {
+        // Obtencion del inodo del elemento en el sistema de archivos.
+        if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada,
+                                    0, 0)) < 0)
+        {
+            return error;
+        }
+        // Actualiza la variable global del último fichero leído.
+        strcpy(UltimaEntradaEscritura.camino, camino);
+        UltimaEntradaEscritura.p_inodo = p_inodo;
+        printf("\n[mi_write() -> Actualizamos la caché de escritura]\n");
+    }
+    else
+    {
+        // Utiliza el p_inodo de memoria.
+        p_inodo = UltimaEntradaEscritura.p_inodo;
+        printf("\n[mi_write() -> Utilizamos la caché de escritura en vez de llam"
+               "ar a buscar_entrada()]\n");
+    }
+
+    // Realiza la escritura del buffer.
+    bytes = mi_write_f(p_inodo, buf, offset, nbytes);
+    if (bytes == -1)
+    {
+        return ERROR_PERMISO_ESCRITURA;
+    }
+    return bytes;
+}
+
+/* Funcion: mi_read:
+* ------------------
+* Esta función permite la lectura del contenido de un archivo en un buffer.
+*
+*  camino: direccion del archivo donde se va a escribir.
+*  buf: buffer con el contenido a escribir.
+*  offset: desplazamiento de bytes dentro del archivo.
+*  nbytes: tamaño en bytes de buffer.
+*
+* returns: número de bytes leídos o bien el error generado.         
+*/
+int mi_read(const char *camino, void *buf, unsigned int offset,
+            unsigned int nbytes)
+{
+    // Inicializacion de las variables.
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    int error;
+    int bytes = 0;
+
+    // Revisa si este ha sido el último archivo accedido.
+    if (strcmp(camino, UltimaEntradaLectura.camino))
+    {
+        // Obtencion del inodo del elemento en el sistema de archivos.
+        if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada,
+                                    0, 0)) < 0)
+        {
+            return error;
+        }
+        // Actualiza la variable global del último fichero leído.
+        strcpy(UltimaEntradaLectura.camino, camino);
+        UltimaEntradaLectura.p_inodo = p_inodo;
+        printf("\n[mi_read() -> Actualizamos la caché de lectura]\n");
+    }
+    else
+    {
+        // Utiliza el p_inodo de memoria.
+        p_inodo = UltimaEntradaLectura.p_inodo;
+        printf("\n[mi_read() -> Utilizamos la caché de lectura en vez de llamar"
+               "a buscar_entrada()]\n");
+    }
+
+    // Realiza la lectura del archivo.
+    bytes = mi_read_f(p_inodo, buf, offset, nbytes);
+    if (bytes == -1)
+    {
+        return ERROR_PERMISO_LECTURA;
+    }
+    return bytes;
 }
 
 /* Funcion: mostrar_error_directorios:
