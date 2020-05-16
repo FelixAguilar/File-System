@@ -620,6 +620,11 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return error;
     }
+
+    printf("p_inodo_dir1: %d\n", p_inodo_dir1);
+    printf("p_inodo1: %d\n", p_inodo1);
+    printf("p_entrada1: %d\n", p_entrada1);
+
     // Lee el inodo relacionado con el archivo a linkear.
     struct inodo inodo1;
     if (leer_inodo(p_inodo1, &inodo1))
@@ -642,29 +647,44 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return error;
     }
+
+    printf("p_inodo_dir2: %d\n", p_inodo_dir2);
+    printf("p_inodo2: %d\n", p_inodo2);
+    printf("p_entrada2: %d\n", p_entrada2);
+
     // Lee la entrada del link en el directorio.
     struct entrada entrada2;
     if (mi_read_f(p_inodo_dir2, &entrada2,
-                  sizeof(struct entrada) * (p_entrada2 - 1),
+                  sizeof(struct entrada) * (p_entrada2),
                   sizeof(struct entrada)) < 0)
     {
         return ERROR_ACCESO_DISCO;
     }
+    printf("Nombre: %s, Ninodo: %d\n", entrada2.nombre, entrada2.ninodo);
+
+    // Libera el inodo creado con el buscar_entrada del link.
+    if (liberar_inodo(entrada2.ninodo) < 0)
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    
+
     // Actualiza el inodo enlazado al camino.
     entrada2.ninodo = p_inodo1;
 
+    printf("Nombre: %s, Ninodo: %d\n", entrada2.nombre, entrada2.ninodo);
+
     // Escribe la entrada del link en el directorio.
     if (mi_write_f(p_inodo_dir2, &entrada2,
-                   sizeof(struct entrada) * (p_entrada2 - 1),
+                   sizeof(struct entrada) * (p_entrada2),
                    sizeof(struct entrada)) < 0)
     {
         return ERROR_ACCESO_DISCO;
     }
-    // Libera el inodo creado con el buscar_entrada del link.
-    if (liberar_inodo(p_inodo2) < 0)
-    {
-        return ERROR_ACCESO_DISCO;
-    }
+    
+
+    
+
     // Actualiza los metadatos el inodo del archivo 1 y lo guarda.
     inodo1.nlinks = inodo1.nlinks + 1;
     inodo1.ctime = time(NULL);
@@ -734,14 +754,14 @@ int mi_unlink(const char *camino)
         struct entrada entrada;
         if (mi_read_f(p_inodo_dir, &entrada,
                       sizeof(struct entrada) * (num_entradas - 1),
-                      sizeof(struct entrada)))
+                      sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
         // Escribe la ultima entrada en la posicion de la entrada a borrar.
         if (mi_write_f(p_inodo_dir, &entrada,
                        sizeof(struct entrada) * p_entrada - 1,
-                       sizeof(struct entrada)))
+                       sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }

@@ -7,7 +7,7 @@
 *
 * returns: Exit_Success o si se ha producido un error Exit_Failure.
 */
-int main(int argc, char **argv)
+int main(int argc, const char *argv[])
 {
     // Comprueba que la sintaxis sea la correcta.
     if (argc != 3)
@@ -16,9 +16,9 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
     // Comprueba que es un fichero.
-    if (argv[2][strlen(argv[2] - 1) == '/'])
+    if ((argv[2][strlen(argv[2]) - 1] == '/'))
     {
-        fprintf(stderr, "Error: La ruta proporcionada no es un fichero.\n");
+        fprintf(stderr, "Error: La ruta prop222orcionada no es un fichero.\n");
         return EXIT_FAILURE;
     }
     // Monta el dispositivo virtual en el sistema.

@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
         return EXIT_FAILURE;
     }
     //Comprueba que los caminos proporcionados son fichero.
-    if (argv[2][strlen(argv[2]) - 1] == '/' && argv[3][strlen(argv[3]) - 1] ==
+    if (argv[2][strlen(argv[2]) - 1] == '/' || argv[3][strlen(argv[3]) - 1] ==
                                                    '/')
     {
         fprintf(stderr, "Error: Al menos una de las rutas no es un fichero.\n");
