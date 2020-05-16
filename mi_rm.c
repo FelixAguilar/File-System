@@ -18,7 +18,7 @@ int main(int argc, const char *argv[])
     // Comprueba que es un fichero.
     if ((argv[2][strlen(argv[2]) - 1] == '/'))
     {
-        fprintf(stderr, "Error: La ruta prop222orcionada no es un fichero.\n");
+        fprintf(stderr, "Error: La ruta proporcionada no es un fichero.\n");
         return EXIT_FAILURE;
     }
     // Monta el dispositivo virtual en el sistema.
@@ -34,7 +34,6 @@ int main(int argc, const char *argv[])
         mostrar_error_directorios(error);
         return EXIT_FAILURE;
     }
-
     // Desmonta el dispositivo virtual.
     bumount();
     return EXIT_SUCCESS;
