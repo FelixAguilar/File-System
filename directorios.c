@@ -503,6 +503,9 @@ int mi_stat(const char *camino, struct STAT *p_stat)
 int mi_write(const char *camino, const void *buf, unsigned int offset,
              unsigned int nbytes)
 {
+   int mi_write(const char *camino, const void *buf, unsigned int offset,
+             unsigned int nbytes)
+{
     // Inicializacion de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -522,14 +525,26 @@ int mi_write(const char *camino, const void *buf, unsigned int offset,
         // Actualiza la variable global del último fichero leído.
         strcpy(UltimaEntradaEscritura.camino, camino);
         UltimaEntradaEscritura.p_inodo = p_inodo;
+
+        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
+        #if DEBUG
+
         printf("\n[mi_write() -> Actualizamos la caché de escritura]\n");
+
+        #endif
     }
     else
     {
         // Utiliza el p_inodo de memoria.
         p_inodo = UltimaEntradaEscritura.p_inodo;
+
+        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
+        #if DEBUG
+
         printf("\n[mi_write() -> Utilizamos la caché de escritura en vez de llam"
                "ar a buscar_entrada()]\n");
+
+        #endif
     }
 
     // Realiza la escritura del buffer.
@@ -574,14 +589,26 @@ int mi_read(const char *camino, void *buf, unsigned int offset,
         // Actualiza la variable global del último fichero leído.
         strcpy(UltimaEntradaLectura.camino, camino);
         UltimaEntradaLectura.p_inodo = p_inodo;
+
+        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
+        #if DEBUG
+
         printf("\n[mi_read() -> Actualizamos la caché de lectura]\n");
+
+        #endif
     }
     else
     {
         // Utiliza el p_inodo de memoria.
         p_inodo = UltimaEntradaLectura.p_inodo;
+
+        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
+        #if DEBUG
+
         printf("\n[mi_read() -> Utilizamos la caché de lectura en vez de llamar"
                "a buscar_entrada()]\n");
+
+        #endif
     }
 
     // Realiza la lectura del archivo.
