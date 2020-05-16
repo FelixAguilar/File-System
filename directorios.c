@@ -483,8 +483,8 @@ int mi_chmod(const char *camino, unsigned char permisos)
 *  camino: direccion del elemento a obtener la informacion.
 *  p_stat: metainformacion del elemento.
 *
-* returns: Exit Success o bien Exit Failure si se ha prducido un error al 
-*          buscar el elemento.
+* returns: el numero del inodo o bien un codigo de error si se ha prducido un 
+*          error al buscar el elemento.
 */
 int mi_stat(const char *camino, struct STAT *p_stat)
 {
@@ -498,16 +498,14 @@ int mi_stat(const char *camino, struct STAT *p_stat)
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0,
                                 0)) < 0)
     {
-        mostrar_error_directorios(error);
-        return EXIT_FAILURE;
+        return error;
     }
-
     // Obtencion de la metainformacion.
     if (mi_stat_f(p_inodo, p_stat))
     {
         return ERROR_ACCESO_DISCO;
     }
-    return EXIT_SUCCESS;
+    return p_inodo;
 }
 
 /* Funcion: mi_write:
