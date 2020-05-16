@@ -18,7 +18,7 @@ int main(int argc, const char *argv[])
     // Comprueba que es un directorio y no es el directorio raiz.
     if ((argv[2][strlen(argv[2]) - 1] != '/'))
     {
-        fprintf(stderr, "Error: La ruta pro111porcionada no es un directorio.\n");
+        fprintf(stderr, "Error: La ruta proporcionada no es un directorio.\n");
         return EXIT_FAILURE;
     }
     if (strlen(argv[2]) == 1)
@@ -39,7 +39,6 @@ int main(int argc, const char *argv[])
         mostrar_error_directorios(error);
         return EXIT_FAILURE;
     }
-
     // Desmonta el dispositivo virtual.
     bumount();
     return EXIT_SUCCESS;
