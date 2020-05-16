@@ -595,8 +595,272 @@ int mi_read(const char *camino, void *buf, unsigned int offset,
     return bytes;
 }
 
+/* Funcion: mi_link:
+* ------------------
+* Esta funcion crea un link al contenido de un fichero en una nueva 
+* localizacion.
+* 
+*  camino1: direccion del archivo a linkear.
+*  camino2: direccion donde se crea el link al archivo.
+*
+* return: Exit_Success o codigo de error a procesar por 
+*         mostrar_error_directorio.
+*/
+int mi_link(const char *camino1, const char *camino2)
+{
+    // Inicializacion de las variables.
+    unsigned int p_inodo_dir1 = 0;
+    unsigned int p_inodo1 = 0;
+    unsigned int p_entrada1 = 0;
+    int error;
+
+    // Busca el archivo a linkear en el disco.
+    if ((error = buscar_entrada(camino1, &p_inodo_dir1, &p_inodo1,
+                                &p_entrada1, 0, 0)) < 0)
+    {
+        return error;
+    }
+    // Lee el inodo relacionado con el archivo a linkear.
+    struct inodo inodo1;
+    if (leer_inodo(p_inodo1, &inodo1))
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Comprueba que el archivo tenga permisos de lectura.
+    if ((inodo1.permisos & 4) != 4)
+    {
+        return ERROR_PERMISO_LECTURA;
+    }
+    // Inicializacion de las variables.
+    unsigned int p_inodo_dir2 = 0;
+    unsigned int p_inodo2 = 0;
+    unsigned int p_entrada2 = 0;
+
+    // Crea la entrada del link en el directorio correspondiente.
+    if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2,
+                                &p_entrada2, 1, 6)) < 0)
+    {
+        return error;
+    }
+    // Lee la entrada del link en el directorio.
+    struct entrada entrada2;
+    if (mi_read_f(p_inodo_dir2, &entrada2,
+                  sizeof(struct entrada) * (p_entrada2 - 1),
+                  sizeof(struct entrada)) < 0)
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Actualiza el inodo enlazado al camino.
+    entrada2.ninodo = p_inodo1;
+
+    // Escribe la entrada del link en el directorio.
+    if (mi_write_f(p_inodo_dir2, &entrada2,
+                   sizeof(struct entrada) * (p_entrada2 - 1),
+                   sizeof(struct entrada)) < 0)
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Libera el inodo creado con el buscar_entrada del link.
+    if (liberar_inodo(p_inodo2) < 0)
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Actualiza los metadatos el inodo del archivo 1 y lo guarda.
+    inodo1.nlinks = inodo1.nlinks + 1;
+    inodo1.ctime = time(NULL);
+    if (escribir_inodo(p_inodo1, inodo1))
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: mi_unlink:
+* --------------------
+* Borra la entrada de directorio especificada, esta funcion sirve tanto para
+* borrar un enlace a un fichero como el contenido de este si no quedan enlaces.
+*
+*  camino: direccion del archivo a borrar.
+*
+* returns: Exit_Success o bien un codigo de error para ser tratado por 
+*          mostrar_error_directorios.
+*/
+int mi_unlink(const char *camino)
+{
+    // Inicializacion de las variables.
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    int error;
+
+    // Busca el archivo a linkear en el disco.
+    if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo,
+                                &p_entrada, 0, 0)) < 0)
+    {
+        return error;
+    }
+    // Lee el inodo del archivo a borrar.
+    struct inodo inodo;
+    if (leer_inodo(p_inodo, &inodo))
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Comprueba si es un directorio y esta vacio.
+    if (inodo.tipo == 'd' && inodo.tamEnBytesLog > 0)
+    {
+        return ERROR_DIRECTORIO_NO_VACIO;
+    }
+    // Lee el inodo del directorio.
+    struct inodo inodo_dir;
+    if (leer_inodo(p_inodo_dir, &inodo_dir))
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Obtiene el numero de entradas que contiene el directorio.
+    int num_entradas = inodo_dir.tamEnBytesLog / sizeof(struct entrada);
+
+    // Comprueba si la entrada a eliminar es la ultima.
+    if (p_entrada == num_entradas - 1)
+    {
+        // Elimina la ultima entrada.
+        if (mi_truncar_f(p_inodo_dir, sizeof(struct entrada)))
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+    }
+    else
+    {
+        // Lee la ultima entrada del directorio.
+        struct entrada entrada;
+        if (mi_read_f(p_inodo_dir, &entrada,
+                      sizeof(struct entrada) * (num_entradas - 1),
+                      sizeof(struct entrada)))
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+        // Escribe la ultima entrada en la posicion de la entrada a borrar.
+        if (mi_write_f(p_inodo_dir, &entrada,
+                       sizeof(struct entrada) * p_entrada - 1,
+                       sizeof(struct entrada)))
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+        // Elimina la ultima entrada.
+        if (mi_truncar_f(p_inodo_dir, sizeof(struct entrada)))
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+    }
+    // Decrementa el numero de enlaces al inodo.
+    inodo.nlinks = inodo.nlinks - 1;
+
+    // Si no quedan enlaces al inodo entonces se elimina.
+    if (!inodo.nlinks)
+    {
+        if (liberar_inodo(p_inodo) < 0)
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+    }
+    else
+    {
+        // Actualiza el ctime y guarda el inodo.
+        inodo.ctime = time(NULL);
+        if (escribir_inodo(p_inodo, inodo))
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+/* Funcion: mi_unlink_r:
+* ----------------------
+* Esta funcion borra de forma recursiva todos los elementos dentro de la 
+* estructura de directorios.
+*
+*  camino: ruta del directorio donde comienza la eliminacion de elementos.
+*
+* returns: Exit_Success o bien un codigo de error a ser tratado por 
+*          mostrar_error_directorios. 
+*/
+int mi_unlink_r(const char *camino)
+{
+    // Inicializacion de las variables.
+    unsigned int p_inodo_dir = 0;
+    unsigned int p_inodo = 0;
+    unsigned int p_entrada = 0;
+    int error;
+
+    // Busca el p_inodo del directorio.
+    if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo,
+                                &p_entrada, 0, 0)) < 0)
+    {
+        return error;
+    }
+    // Variables para la lectura del contenido del inodo.
+    struct entrada entrada[BLOCKSIZE / sizeof(struct entrada)];
+    int tam_entrada = BLOCKSIZE / sizeof(struct entrada);
+    int offset = 0;
+    int leidos;
+
+    // Lee el contenido del inodo.
+    if ((leidos = mi_read_f(p_inodo, &entrada, offset, tam_entrada)) < 0)
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Recorre todas las entradas del directorio.
+    while (leidos > 0)
+    {
+        // Actualiza el offset de lectura e indice.
+        int offset = offset + leidos;
+        int entradas = leidos / sizeof(struct entrada);
+
+        // Recorre todas las entradas leidas.
+        while (entradas)
+        {
+            // Lee el inodo de la entrada.
+            struct inodo inodo;
+            if (leer_inodo(entrada[entradas].ninodo, &inodo))
+            {
+                return ERROR_ACCESO_DISCO;
+            }
+            // Comprueba si es un directorio.
+            if (inodo.tipo == 'd')
+            {
+                // Si es un directorio, entonces llama a la funcion otra vez.
+                if ((error = mi_unlink_r(entrada[entradas].nombre)) < 0)
+                {
+                    return error;
+                }
+            }
+            else
+            {
+                // Si es un fichero, borra este del sistema.
+                if ((error = mi_unlink(entrada[entradas].nombre)) < 0)
+                {
+                    return error;
+                }
+            }
+            // Procesa siquiente entrada.
+            entradas--;
+        }
+        // Lee siguiente conjunto de entradas.
+        if ((leidos = mi_read_f(p_inodo, &entrada, offset, tam_entrada)) < 0)
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+    }
+    // Elimina el directorio indicado por parametro.
+    if ((error = mi_unlink(camino)) < 0)
+    {
+        return error;
+    }
+    return EXIT_SUCCESS;
+}
+
 /* Funcion: mostrar_error_directorios:
-* ---------------------------------------
+* ------------------------------------
 * Esta funcion trata los error producidos por las funciones de la libreria 
 * directorios, mostrando la excepcion por pantalla.
 *
@@ -629,5 +893,8 @@ void mostrar_error_directorios(int error)
         break;
     case -8:
         fprintf(stderr, "Error: No se ha podico acceder a disco.\n");
+        break;
+    case -9:
+        fprintf(stderr, "Error: El directorio no esta vacio.\n");
     }
 }
