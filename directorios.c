@@ -99,8 +99,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     // Comprueba que este tenga permiso de lectura.
     if ((inodo.permisos & 4) != 4)
     {
-        printf("[buscar_entrada()->El inodo %d no tiene permisos de lectura\n",
-               *(p_inodo_dir));
         return ERROR_PERMISO_LECTURA;
     }
 
@@ -120,8 +118,13 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     {
         return ERROR_CAMINO_INCORRECTO;
     }
-    printf("[buscar_entrada()->inicial:%s,final:%s,reservar:%d]\n", inicial,
+
+    #if DEBUG
+
+    printf("[buscar_entrada()->inicial: %s, final: %s, reservar: %d]\n", inicial,
            final, reservar);
+
+    #endif
 
     // Obtiene el numero total de entrada en el inodo y inicializa el indice.
     int cantEntradasInodo = inodo.tamEnBytesLog / sizeof(struct entrada);
@@ -207,9 +210,15 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                     {
                         // Reserva un inodo para el nuevo directorio.
                         entrada.ninodo = reservar_inodo(tipo, permisos);
+
+                        #if DEBUG
+
                         printf("[buscar()->reservado inodo %d tipo %c con perm"
                                "isos %d para %s]\n",
                                entrada.ninodo, tipo, permisos, entrada.nombre);
+
+                        #endif
+
                         if (entrada.ninodo == -1)
                         {
                             return ERROR_ACCESO_DISCO;
@@ -224,9 +233,15 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                 {
                     // Reserva un inodo para el nuevo fichero.
                     entrada.ninodo = reservar_inodo(tipo, permisos);
-                    printf("[buscar()->reservado inodo %d tipo %c con permisos"
+
+                    #if DEBUG
+
+                    printf("[buscar()-> reservado inodo %d tipo %c con permisos"
                            " %d para %s]\n",
                            entrada.ninodo, tipo, permisos, entrada.nombre);
+
+                    #endif
+
                     if (entrada.ninodo == -1)
                     {
                         return ERROR_ACCESO_DISCO;
@@ -238,8 +253,14 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                 {
                     liberar_inodo(entrada.ninodo);
                 }
-                printf("[buscar_entrada()->creada entrada: %s, %d]\n",
+
+                #if DEBUG
+
+                printf("[buscar_entrada()-> creada entrada: %s, %d]\n",
                        entrada.nombre, entrada.ninodo);
+
+                #endif
+
                 return EXIT_FAILURE;
             }
             break;
