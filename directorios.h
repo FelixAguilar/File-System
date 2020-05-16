@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include "fichero.h"
 
+// Imprime los mensajes de ejecucion.
+#define DEBUG 0
+
 // Errores de directorios.
 #define ERROR_CAMINO_INCORRECTO -1
 #define ERROR_PERMISO_LECTURA -2

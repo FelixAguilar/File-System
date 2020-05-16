@@ -429,9 +429,8 @@ int mi_dir(const char *camino, char *buffer)
 *  camino: direccion del elemento del cual se quiere cambiar los permisos.
 *  permisos: nuevos permisos que tendra el elemento.
 *
-* return: Devuelve Exit_Success si ha ido correctamente o Exit_Failure mas 
-*         mensaje de error si ha fallado la busqueda del elemento o bien error 
-*         para ser tratado por mostrar_error_directorios si fallo.
+* return: Devuelve Exit_Success si ha ido correctamente o bien un codigo de 
+*         error para la funcion mostrar_error_directorios.
 */
 int mi_chmod(const char *camino, unsigned char permisos)
 {
@@ -445,8 +444,7 @@ int mi_chmod(const char *camino, unsigned char permisos)
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0,
                                 permisos)) < 0)
     {
-        mostrar_error_directorios(error);
-        return EXIT_FAILURE;
+        return error;
     }
 
     //Modifica los permisos del elemento.
