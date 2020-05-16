@@ -665,10 +665,6 @@ int mi_link(const char *camino1, const char *camino2)
         return error;
     }
 
-    printf("p_inodo_dir1: %d\n", p_inodo_dir1);
-    printf("p_inodo1: %d\n", p_inodo1);
-    printf("p_entrada1: %d\n", p_entrada1);
-
     // Lee el inodo relacionado con el archivo a linkear.
     struct inodo inodo1;
     if (leer_inodo(p_inodo1, &inodo1))
@@ -692,10 +688,6 @@ int mi_link(const char *camino1, const char *camino2)
         return error;
     }
 
-    printf("p_inodo_dir2: %d\n", p_inodo_dir2);
-    printf("p_inodo2: %d\n", p_inodo2);
-    printf("p_entrada2: %d\n", p_entrada2);
-
     // Lee la entrada del link en el directorio.
     struct entrada entrada2;
     if (mi_read_f(p_inodo_dir2, &entrada2,
@@ -704,7 +696,6 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_ACCESO_DISCO;
     }
-    printf("Nombre: %s, Ninodo: %d\n", entrada2.nombre, entrada2.ninodo);
 
     // Libera el inodo creado con el buscar_entrada del link.
     if (liberar_inodo(entrada2.ninodo) < 0)
@@ -716,8 +707,6 @@ int mi_link(const char *camino1, const char *camino2)
     // Actualiza el inodo enlazado al camino.
     entrada2.ninodo = p_inodo1;
 
-    printf("Nombre: %s, Ninodo: %d\n", entrada2.nombre, entrada2.ninodo);
-
     // Escribe la entrada del link en el directorio.
     if (mi_write_f(p_inodo_dir2, &entrada2,
                    sizeof(struct entrada) * (p_entrada2),
@@ -725,8 +714,6 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_ACCESO_DISCO;
     }
-    
-
     
 
     // Actualiza los metadatos el inodo del archivo 1 y lo guarda.
