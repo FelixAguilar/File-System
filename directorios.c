@@ -119,12 +119,12 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
         return ERROR_CAMINO_INCORRECTO;
     }
 
-    #if DEBUG
+#if DEBUG
 
     printf("[buscar_entrada()->inicial: %s, final: %s, reservar: %d]\n", inicial,
            final, reservar);
 
-    #endif
+#endif
 
     // Obtiene el numero total de entrada en el inodo y inicializa el indice.
     int cantEntradasInodo = inodo.tamEnBytesLog / sizeof(struct entrada);
@@ -211,13 +211,13 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                         // Reserva un inodo para el nuevo directorio.
                         entrada.ninodo = reservar_inodo(tipo, permisos);
 
-                        #if DEBUG
+#if DEBUG
 
                         printf("[buscar()->reservado inodo %d tipo %c con perm"
                                "isos %d para %s]\n",
                                entrada.ninodo, tipo, permisos, entrada.nombre);
 
-                        #endif
+#endif
 
                         if (entrada.ninodo == -1)
                         {
@@ -234,13 +234,13 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                     // Reserva un inodo para el nuevo fichero.
                     entrada.ninodo = reservar_inodo(tipo, permisos);
 
-                    #if DEBUG
+#if DEBUG
 
                     printf("[buscar()-> reservado inodo %d tipo %c con permisos"
                            " %d para %s]\n",
                            entrada.ninodo, tipo, permisos, entrada.nombre);
 
-                    #endif
+#endif
 
                     if (entrada.ninodo == -1)
                     {
@@ -252,16 +252,14 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                                sizeof(struct entrada)) == -1)
                 {
                     liberar_inodo(entrada.ninodo);
+                    return EXIT_FAILURE;
                 }
-
-                #if DEBUG
+#if DEBUG
 
                 printf("[buscar_entrada()-> creada entrada: %s, %d]\n",
                        entrada.nombre, entrada.ninodo);
 
-                #endif
-
-                return EXIT_FAILURE;
+#endif
             }
             break;
         }
@@ -297,7 +295,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
 *  camino: direccion completa con el camino donde se creara el elemento.
 *  permisos: permisos que tendra el elemento.
 *
-* returns: Exit_Success o Exit_Failure si se ha producido un error.
+* returns: Exit_Success o codigo de error si se ha producido un error.
 */
 int mi_creat(const char *camino, unsigned char permisos)
 {
@@ -311,8 +309,7 @@ int mi_creat(const char *camino, unsigned char permisos)
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1,
                                 permisos)) < 0)
     {
-        mostrar_error_directorios(error);
-        return EXIT_FAILURE;
+        return error;
     }
     return EXIT_SUCCESS;
 }
@@ -346,8 +343,7 @@ int mi_dir(const char *camino, char *buffer)
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0,
                                 0)) < 0)
     {
-        mostrar_error_directorios(error);
-        return EXIT_FAILURE;
+        return error;
     }
     // Obtiene el inodo del sistema de archivos.
     struct inodo inodo;
@@ -522,9 +518,6 @@ int mi_stat(const char *camino, struct STAT *p_stat)
 int mi_write(const char *camino, const void *buf, unsigned int offset,
              unsigned int nbytes)
 {
-   int mi_write(const char *camino, const void *buf, unsigned int offset,
-             unsigned int nbytes)
-{
     // Inicializacion de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -545,25 +538,25 @@ int mi_write(const char *camino, const void *buf, unsigned int offset,
         strcpy(UltimaEntradaEscritura.camino, camino);
         UltimaEntradaEscritura.p_inodo = p_inodo;
 
-        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
-        #if DEBUG
+// Si DEBUG es 1 entonces se muestran los mensajes de depuración
+#if DEBUG
 
         printf("\n[mi_write() -> Actualizamos la caché de escritura]\n");
 
-        #endif
+#endif
     }
     else
     {
         // Utiliza el p_inodo de memoria.
         p_inodo = UltimaEntradaEscritura.p_inodo;
 
-        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
-        #if DEBUG
+// Si DEBUG es 1 entonces se muestran los mensajes de depuración
+#if DEBUG
 
         printf("\n[mi_write() -> Utilizamos la caché de escritura en vez de llam"
                "ar a buscar_entrada()]\n");
 
-        #endif
+#endif
     }
 
     // Realiza la escritura del buffer.
@@ -609,25 +602,25 @@ int mi_read(const char *camino, void *buf, unsigned int offset,
         strcpy(UltimaEntradaLectura.camino, camino);
         UltimaEntradaLectura.p_inodo = p_inodo;
 
-        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
-        #if DEBUG
+// Si DEBUG es 1 entonces se muestran los mensajes de depuración
+#if DEBUG
 
         printf("\n[mi_read() -> Actualizamos la caché de lectura]\n");
 
-        #endif
+#endif
     }
     else
     {
         // Utiliza el p_inodo de memoria.
         p_inodo = UltimaEntradaLectura.p_inodo;
 
-        // Si DEBUG es 1 entonces se muestran los mensajes de depuración
-        #if DEBUG
+// Si DEBUG es 1 entonces se muestran los mensajes de depuración
+#if DEBUG
 
         printf("\n[mi_read() -> Utilizamos la caché de lectura en vez de llamar"
                "a buscar_entrada()]\n");
 
-        #endif
+#endif
     }
 
     // Realiza la lectura del archivo.
@@ -697,13 +690,6 @@ int mi_link(const char *camino1, const char *camino2)
         return ERROR_ACCESO_DISCO;
     }
 
-    // Libera el inodo creado con el buscar_entrada del link.
-    if (liberar_inodo(entrada2.ninodo) < 0)
-    {
-        return ERROR_ACCESO_DISCO;
-    }
-    
-
     // Actualiza el inodo enlazado al camino.
     entrada2.ninodo = p_inodo1;
 
@@ -714,7 +700,12 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_ACCESO_DISCO;
     }
-    
+
+    // Libera el inodo creado con el buscar_entrada del link.
+    if (liberar_inodo(p_inodo2) < 0)
+    {
+        return ERROR_ACCESO_DISCO;
+    }
 
     // Actualiza los metadatos el inodo del archivo 1 y lo guarda.
     inodo1.nlinks = inodo1.nlinks + 1;

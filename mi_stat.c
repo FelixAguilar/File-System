@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
     strftime(ctime, sizeof(ctime), "%a %Y-%m-%d %H:%M:%S", ts);
 
     // Mustra los valores de los meta datos.
-    printf("inodo: %d\n", p_inodo);
+    printf("Nº de inodo: %d\n", p_inodo);
     printf("tipo: %c\n", p_stat.tipo);
     printf("permisos: %d\n", p_stat.permisos);
     printf("atime: %s\n", atime);

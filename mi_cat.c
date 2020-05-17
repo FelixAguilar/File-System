@@ -57,7 +57,7 @@ int main(int argc, char const *argv[])
     }
 
     // Muestra el número de bytes leídos.
-    fprintf(stderr, "total_leidos: %d\n", bytes);
+    fprintf(stderr, "\n\ntotal_leidos: %d\n", bytes);
 
     // Desmonta el dispositivo del sistema y finaliza.
     bumount();

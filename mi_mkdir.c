@@ -7,7 +7,8 @@ int main(int argc, char const *argv[])
     if (argc != 4)
     {
         fprintf(stderr,
-                "Error de sintaxis: ./mi_mkdir <disco><permisos></ruta>\n");
+                "Error de sintaxis: ./mi_mkdir <disco> <permisos> </ruta_direc"
+                "torio/>\n");
         return EXIT_FAILURE;
     }
 
@@ -28,10 +29,19 @@ int main(int argc, char const *argv[])
             fprintf(stderr, "Error de montaje de disco.\n");
             return EXIT_FAILURE;
         }
-
-        mi_creat(argv[3], permisos);
+        int error;
+        if ((error = mi_creat(argv[3], permisos)) < 0)
+        {
+            mostrar_error_directorios(error);
+            return EXIT_FAILURE;
+        }
 
         bumount();
     }
-
+    else
+    {
+        fprintf(stderr, "Error: Un directorio siempre acaba con /.\n");
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }

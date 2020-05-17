@@ -20,8 +20,12 @@ int main(int argc, char const *argv[])
 
     char buffer[TAMBUFFER];
     memset(buffer, 0 , TAMBUFFER);
-    int total = mi_dir(argv[2], buffer);
-
+    int total;
+    if ((total = mi_dir(argv[2], buffer)) < 0)
+    {
+        mostrar_error_directorios(total);
+        return EXIT_FAILURE;
+    }
     if (total > 0)
     {
         printf("Total: %d\n", total);
@@ -37,6 +41,6 @@ int main(int argc, char const *argv[])
         printf("%s\n", buffer);
         
     }
-
     bumount();
+    return EXIT_SUCCESS;
 }

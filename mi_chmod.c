@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
     }
     // Realiza el cambio de permisos.
     int error;
-    if (error = mi_chmod(argv[3], permisos) < 0)
+    if ((error = mi_chmod(argv[3], permisos)) < 0)
     {
         mostrar_error_directorios(error);
     }
