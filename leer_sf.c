@@ -1,6 +1,7 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno.
 #include <stdlib.h>
 #include "fichero.h"
+
 /* Fichero: leer_sf.c:
 * --------------------
 * La ejecución de este fichero permite mostrar el contenido del superbloque.
@@ -19,14 +20,12 @@ int main(int argc, char const *argv[])
                       "Error de sintaxis: ./leer_sf <nombre_dispositivo>\n");
               return EXIT_FAILURE;
        }
-
        // Monta el disco en el sistema.
        if (bmount(argv[1]) == -1)
        {
               fprintf(stderr, "Error de montaje de disco.\n");
               return EXIT_FAILURE;
        }
-
        // Lee el superbloque del disco.
        struct superbloque SB;
        if (bread(0, &SB) == -1)
@@ -34,7 +33,6 @@ int main(int argc, char const *argv[])
               fprintf(stderr, "Error de lectura del superbloque.\n");
               return EXIT_FAILURE;
        }
-
        // Muestra por consola el contenido del superbloque.
        printf("DATOS DEL SUPERBLOQUE\n");
        printf("posPrimerBloqueMB = %d\n", SB.posPrimerBloqueMB);

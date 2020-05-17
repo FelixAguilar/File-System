@@ -20,7 +20,6 @@ int main(int argc, char **argv)
                         "<tamaño_en_bloques>\n");
         return EXIT_FAILURE;
     }
-
     // Obtiene los valores de los parámetros.
     char *nombre = argv[1];
     int nBloques = atoi(argv[2]);
@@ -36,7 +35,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error de montaje de dispositivo virtual.\n");
         return EXIT_FAILURE;
     }
-
     // Limpia el espacio ocupado por el dispositivo virtual con el buffer.
     for (int i = 0; i < nBloques; i++)
     {
@@ -46,7 +44,6 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
     }
-
     // Inicialización de metadatos.
     if (initSB(nBloques, ninodos))
     {
@@ -65,14 +62,12 @@ int main(int argc, char **argv)
                         "dispositivo.\n");
         return EXIT_FAILURE;
     }
-
     // Reserva el inodo para el directorio raíz.
     if (reservar_inodo('d', 7) == -1)
     {
         fprintf(stderr, "Error en la reserva del inodo raíz.\n");
         return EXIT_FAILURE;
     }
-
     // Desmonta el dispositivo virtual.
     bumount();
     return EXIT_SUCCESS;

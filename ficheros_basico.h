@@ -8,6 +8,9 @@
 #include <time.h>    // para el guardado de tiempos.
 #include "bloques.h" // enlace a la libreria bloques.h.
 
+// Imprime los mensajes de ejecucion.
+#define DEBUG 0
+
 #define SBPOS 0                                       // posición superbloque.
 #define SBSIZE 1                                      // tamaño superbloque.
 #define INODOSIZE 128                                 // bytes de un inodo.
@@ -17,6 +20,7 @@
 #define INDIRECTOS1 (NPUNTEROS * NPUNTEROS + INDIRECTOS0) // 65.804 punteros.
 #define INDIRECTOS2 (NPUNTEROS * NPUNTEROS * NPUNTEROS + INDIRECTOS1) // 16.843.020 punteros.
 
+// Estructura del superbloque.
 struct superbloque
 {
     // Posición del primer bloque del mapa de bits en el SF.
@@ -47,6 +51,7 @@ struct superbloque
     char padding[BLOCKSIZE - 12 * sizeof(unsigned int)];
 };
 
+// Estructura de los inodos.
 struct inodo
 {
     char tipo;     // Tipo ('l':libre, 'd':directorio o 'f':fichero).
@@ -68,7 +73,7 @@ struct inodo
                                         1 indirecto simple, 1 indirecto doble,
                                         1 indirecto triple */
 
-    // Variable de alineacion.
+    // Variable de alineación.
     char padding[INODOSIZE - 2 * sizeof(unsigned char) - 3 * sizeof(time_t) -
                  18 * sizeof(unsigned int) - 6 * sizeof(unsigned char)];
 };

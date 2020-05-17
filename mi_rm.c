@@ -1,11 +1,15 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "directorios.h"
+
 /*
 * Fichero: mi_rm.c:
 * -----------------
-* Elimina el fichero indicado por parametro.
+* Elimina el fichero indicado por parámetro.
 *
-* returns: Exit_Success o si se ha producido un error Exit_Failure.
+*  argc: número de argumentos introducidos.
+*  argv: char array de los argumentos introducidos.
+*
+*  returns: Exit_Success o si se ha producido un error Exit_Failure.
 */
 int main(int argc, const char *argv[])
 {
@@ -18,7 +22,7 @@ int main(int argc, const char *argv[])
     // Comprueba que es un fichero.
     if ((argv[2][strlen(argv[2]) - 1] == '/'))
     {
-        fprintf(stderr, "Error: La ruta proporcionada no es un fichero.\n");
+        fprintf(stderr, "Error: la ruta proporcionada no es un fichero.\n");
         return EXIT_FAILURE;
     }
     // Monta el dispositivo virtual en el sistema.
@@ -27,7 +31,7 @@ int main(int argc, const char *argv[])
         fprintf(stderr, "Error: no se pudo montar el dispositivo.\n");
         return EXIT_FAILURE;
     }
-    // ELimina el fichero del sistema.
+    // Elimina el fichero del sistema.
     int error;
     if ((error = mi_unlink(argv[2])) < 0)
     {

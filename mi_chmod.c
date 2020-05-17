@@ -5,7 +5,10 @@
 * ---------------------
 * Este archivo permite cambiar los permisos de un fichero o directorio.
 *
-* returns Exit_Success o bien Exit_Failure si se ha producido un error.
+*  argc: número de argumentos introducidos.
+*  argv: char array de los argumentos introducidos.
+*
+*  returns: Exit_Success o bien Exit_Failure si se ha producido un error.
 */
 int main(int argc, char const *argv[])
 {
@@ -16,7 +19,7 @@ int main(int argc, char const *argv[])
                 "Error de sintaxis: ./mi_chmod <disco> <permisos> </ruta>\n");
         return EXIT_FAILURE;
     }
-    // Comprueba que los permisos a utilizar esten en el rango adecuado.
+    // Comprueba que los permisos a utilizar estén en el rango adecuado.
     unsigned char permisos = atoi(argv[2]);
     if (permisos > 7)
     {

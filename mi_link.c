@@ -6,7 +6,10 @@
 * Permite la creacion de enlaces a archivos desde otras ubicaciones del 
 * dispositivo.
 *
-* returns: Exit_Success o si se produce un error Exit_Failure.
+*  argc: número de argumentos introducidos.
+*  argv: char array de los argumentos introducidos.
+*
+*  returns: Exit_Success o si se produce un error Exit_Failure.
 */
 int main(int argc, char const *argv[])
 {
@@ -21,7 +24,7 @@ int main(int argc, char const *argv[])
     if (argv[2][strlen(argv[2]) - 1] == '/' || argv[3][strlen(argv[3]) - 1] ==
                                                    '/')
     {
-        fprintf(stderr, "Error: Al menos una de las rutas no es un fichero.\n");
+        fprintf(stderr, "Error: al menos una de las rutas no es un fichero.\n");
         return EXIT_FAILURE;
     }
     // Monta el dispositivo en el sistema.

@@ -5,12 +5,12 @@
 * ---------------------
 * Esta función permite escribir el contenido del buffer en la unidad virtual.
 *
-*  ninodo: número de nodo en el array de inodos.
+*  ninodo: número de inodo en el array de inodos.
 *  buf_original: buffer con el contenido del archivo.
 *  offset: número de byte a partir del cual se empiezan a escribir los datos.
 *  nbytes: número de bytes que contiene el buf_original.
 *
-* return: numero de bytes que se ha podido escribir si no -1.
+* return: número de bytes que se ha podido escribir si no -1.
 */
 int mi_write_f(unsigned int ninodo, const void *buf_original,
                unsigned int offset, unsigned int nbytes)
@@ -21,14 +21,12 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     {
         return -1;
     }
-
     // Comprueba si el inodo apunta a un archivo con permiso de escritura.
     if ((inodo.permisos & 2) != 2)
     {
         return -1;
     }
-
-    // Calcula el primer y ultimo bloquef de la escritura.
+    // Calcula el primer y último bloquef de la escritura.
     int bloqueLI = offset / BLOCKSIZE;
     int bloqueLF = (offset + nbytes - 1) / BLOCKSIZE;
 
@@ -38,14 +36,12 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     {
         return -1;
     }
-
     // Lee el bloquef del disco.
     char buffer[BLOCKSIZE];
     if (bread(bloquef, buffer) == -1)
     {
         return -1;
     }
-
     // Calcula el desplazamiento en el bloquef.
     int desp1 = offset % BLOCKSIZE;
 
@@ -60,7 +56,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
         // Copiamos el contenido de buf_original en el buffer.
         memcpy(buffer + desp1, buf_original, BLOCKSIZE - desp1);
     }
-
     // Escribe el bloquef en el disco virtual.
     int bytes_escritos = 0;
     int aux = bwrite(bloquef, buffer);
@@ -76,13 +71,11 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     {
         bytes_escritos = aux - desp1;
     }
-
     // Caso en que el archivo vaya a ocupar más de un bloquef.
     if (bloqueLI != bloqueLF)
     {
         // Tratamiento bloques intermedios.
         int i = bloqueLI + 1;
-
         while (i < bloqueLF)
         {
             // Obtiene el bloque físico intermedio en el archivo.
@@ -91,7 +84,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
             {
                 return -1;
             }
-
             // Escribe el bloquef intermedio en el disco virtual.
             aux = bwrite(bloquef, buf_original + (BLOCKSIZE - desp1) +
                                       (i - bloqueLI - 1) * BLOCKSIZE);
@@ -102,20 +94,17 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
             bytes_escritos = bytes_escritos + aux;
             i++;
         }
-
         // Obtiene el bloque físico final.
         bloquef = traducir_bloque_inodo(ninodo, bloqueLF, 1);
         if (bloquef == -1)
         {
             return -1;
         }
-
         // Lee el bloquef del disco.
         if (bread(bloquef, buffer) == -1)
         {
             return -1;
         }
-
         // Calcula el desplazamiento final.
         int desp2 = (offset + nbytes - 1) % BLOCKSIZE;
 
@@ -130,20 +119,17 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
         }
         bytes_escritos = bytes_escritos + desp2 + 1;
     }
-
     // Lee el inodo después de la operación de escritura del archivo.
     if (leer_inodo(ninodo, &inodo))
     {
         return -1;
     }
-
     // Actualiza el tamaño lógico si es mayor que el archivo en el inodo.
     if ((offset + nbytes) > inodo.tamEnBytesLog)
     {
         inodo.tamEnBytesLog = offset + nbytes;
         inodo.ctime = time(NULL);
     }
-
     // Actualiza el tiempo de modificación en la zona de datos.
     inodo.mtime = time(NULL);
 
@@ -169,7 +155,6 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
 int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
               unsigned int nbytes)
 {
-
     int leidos = 0;
     struct inodo inodo;
 
@@ -178,13 +163,11 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
     {
         return leidos;
     }
-
     // Comprueba si los permisos permiten leer.
     if ((inodo.permisos & 4) != 4)
     {
         return leidos;
     }
-
     // Evita que la lectura sobrepase la longitud del archivo.
     if (offset >= inodo.tamEnBytesLog)
     {
@@ -194,7 +177,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
     {
         nbytes = inodo.tamEnBytesLog - offset;
     }
-
     // Inicialización de variables.
     int bloqueLI = offset / BLOCKSIZE;
     int bloqueLF = (offset + nbytes - 1) / BLOCKSIZE;
@@ -219,7 +201,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
         }
         leidos = nbytes;
     }
-
     // Si la lectura involucra más de un bloque.
     else
     {
@@ -273,7 +254,7 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
     return leidos;
 }
 
-/* Funcion: mi_stat_f:
+/* Función: mi_stat_f:
 * --------------------
 * Esta función devuelve la metainformación de un fichero/directorio.
 *
@@ -292,7 +273,6 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat)
     {
         return EXIT_FAILURE;
     }
-
     // Guarda los valores del inodo en p_stat.
     p_stat->tipo = inodo.tipo;
     p_stat->permisos = inodo.permisos;
@@ -324,7 +304,6 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
     {
         return EXIT_FAILURE;
     }
-
     // Actualiza los permisos del archivo.
     inodo.permisos = permisos;
     inodo.ctime = time(NULL);
@@ -355,14 +334,12 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
     {
         return EXIT_FAILURE;
     }
-
     // Revisa los permisos de escritura.
     if ((inodo.permisos & 2) != 2)
     {
         fprintf(stderr, "Error no hay permisos de escritura");
         return -1;
     }
-
     // Obtiene el primer bloque lógico a truncar.
     int primerBL;
     if (!(nbytes % BLOCKSIZE))
@@ -373,7 +350,6 @@ int mi_truncar_f(unsigned int ninodo, unsigned int nbytes)
     {
         primerBL = nbytes / BLOCKSIZE + 1;
     }
-
     // Libera los bloques a continuación de primerBL del inodo.
     int liberados = liberar_bloques_inodo(primerBL, &inodo);
 

@@ -66,9 +66,9 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 *  reservar: indicador si se ha de crear un nuevo elemento o no (1 o 0).
 *  permisos: permisos a tener por el nuevo elemento (si reservar = 1).
 *
-* return: Devuelve un codigo de error para ser procesado por la funcion 
-*         mostrar_error_directorios si es menor que 0. si ha sido correcta la
-*         ejecucion devolvera 0 o 1.
+* return: Devuelve un código de error para ser procesado por la función 
+*         mostrar_error_directorios si es menor que 0. Si ha sido correcta la
+*         ejecución devolverá Exit_Success.
 */
 int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                    unsigned int *p_inodo, unsigned int *p_entrada,
@@ -83,7 +83,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
         {
             return ERROR_ACCESO_DISCO;
         }
-        // Guarda el pinodo del directorio raiz y finaliza la ejecucion.
+        // Guarda el pinodo del directorio raiz y finaliza la ejecución.
         *(p_inodo) = SB.posInodoRaiz;
         *(p_entrada) = 0;
         return EXIT_SUCCESS;
@@ -113,24 +113,20 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     memset(final, 0, strlen(camino_parcial));
     memset(entrada.nombre, 0, sizeof(entrada.nombre));
 
-    // Obtiene el elemento inicial y su tipo ademas del final del camino.
+    // Obtiene el elemento inicial y su tipo además del final del camino.
     if (extraer_camino(camino_parcial, inicial, final, &tipo))
     {
         return ERROR_CAMINO_INCORRECTO;
     }
-
 #if DEBUG
-
     printf("[buscar_entrada()->inicial: %s, final: %s, reservar: %d]\n", inicial,
            final, reservar);
-
 #endif
-
-    // Obtiene el numero total de entrada en el inodo y inicializa el indice.
+    // Obtiene el número total de entradas en el inodo e inicializa el índice.
     int cantEntradasInodo = inodo.tamEnBytesLog / sizeof(struct entrada);
     int numEntradaInodo = 0;
 
-    //Si hay entradas en el inodo.
+    // Si hay entradas en el inodo.
     if (cantEntradasInodo > 0)
     {
         // Inicializa un array de entradas que caben en un bloque.
@@ -141,7 +137,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
         while ((numEntradaInodo < cantEntradasInodo) && strcmp(entrada.nombre,
                                                                inicial))
         {
-            // Obtiene la direccion fisica del bloque de entradas a procesar.
+            // Obtiene la dirección física del bloque de entradas a procesar.
             int bloquef = traducir_bloque_inodo(
                 *(p_inodo_dir),
                 numEntradaInodo / (BLOCKSIZE / sizeof(struct entrada)), 0);
@@ -160,7 +156,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                hayan procesado todas las entradas de este o bien encontrado el 
                elemento inicial.*/
             int numEntradaArray = 0;
-            //printf("bytes: %d\n", bytes);
             while (numEntradaArray < ((bytes / sizeof(struct entrada)) - 1) &&
                    strcmp(entradas[numEntradaArray].nombre, inicial) &&
                    (numEntradaInodo < cantEntradasInodo))
@@ -168,22 +163,17 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                 // Avanza dentro de las entradas del inodo.
                 numEntradaArray++;
                 numEntradaInodo++;
-                //printf("%d y %s\n", numEntradaArray , entradas[numEntradaArray].nombre);
             }
-
-            //printf ("strcmp (%s, %s)\n", entradas[numEntradaArray].nombre, inicial);
-
-            //Si el elemento se ha encontrado, copia sus datos en entrada.
-            if (cantEntradasInodo != numEntradaInodo && !strcmp(entradas[numEntradaArray].nombre, inicial))
+            /* Si no se ha sobrepasado el número de elementos del directorio y 
+               el elemento se ha encontrado, copia sus datos en entrada. */
+            if (cantEntradasInodo != numEntradaInodo &&
+                !strcmp(entradas[numEntradaArray].nombre, inicial))
             {
                 strcpy(entrada.nombre, entradas[numEntradaArray].nombre);
                 entrada.ninodo = entradas[numEntradaArray].ninodo;
             }
         }
     }
-
-    //printf("%d == %d && strcmp(%s, %s)\n", cantEntradasInodo, numEntradaInodo , entrada.nombre, inicial);
-
     // Si inicial no se ha encontrado y se han procesado todas las entradas.
     if (cantEntradasInodo == numEntradaInodo && strcmp(entrada.nombre, inicial))
     {
@@ -209,7 +199,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
             }
             else
             {
-                /* copia inicial en entrada y revisa que el tipo de inicial sea
+                /* Copia inicial en entrada y revisa que el tipo de inicial sea
                    directorio. */
                 strcpy(entrada.nombre, inicial);
                 if (tipo == 'd')
@@ -219,15 +209,11 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                     {
                         // Reserva un inodo para el nuevo directorio.
                         entrada.ninodo = reservar_inodo(tipo, permisos);
-
 #if DEBUG
-
                         printf("[buscar()->reservado inodo %d tipo %c con perm"
                                "isos %d para %s]\n",
                                entrada.ninodo, tipo, permisos, entrada.nombre);
-
 #endif
-
                         if (entrada.ninodo == -1)
                         {
                             return ERROR_ACCESO_DISCO;
@@ -242,15 +228,11 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                 {
                     // Reserva un inodo para el nuevo fichero.
                     entrada.ninodo = reservar_inodo(tipo, permisos);
-
 #if DEBUG
-
                     printf("[buscar()-> reservado inodo %d tipo %c con permisos"
                            " %d para %s]\n",
                            entrada.ninodo, tipo, permisos, entrada.nombre);
-
 #endif
-
                     if (entrada.ninodo == -1)
                     {
                         return ERROR_ACCESO_DISCO;
@@ -264,10 +246,8 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                     return EXIT_FAILURE;
                 }
 #if DEBUG
-
                 printf("[buscar_entrada()-> creada entrada: %s, %d]\n",
                        entrada.nombre, entrada.ninodo);
-
 #endif
             }
             break;
@@ -276,7 +256,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     // Si se ha llegado al final del procesado entonces.
     if (!strcmp(final, "") || !strcmp(final, "/"))
     {
-        // Si se ha encontrado el elemento y esta en modo escritura entonces.
+        // Si se ha encontrado el elemento y está en modo escritura entonces.
         if ((numEntradaInodo < cantEntradasInodo) && (reservar == 1))
         {
             return ERROR_ENTRADA_YA_EXISTENTE;
@@ -301,20 +281,20 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
 * Utilizada para crear un fichero o un directorio y su entrada en el directorio
 * padre.
 *
-*  camino: direccion completa con el camino donde se creara el elemento.
-*  permisos: permisos que tendra el elemento.
+*  camino: dirección completa con el camino donde se creará el elemento.
+*  permisos: permisos que tendrá el elemento.
 *
-* returns: Exit_Success o codigo de error si se ha producido un error.
+* returns: Exit_Success o código de error si se ha producido un error.
 */
 int mi_creat(const char *camino, unsigned char permisos)
 {
-    // Inicializacion de variables.
+    // Inicialización de variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
     int error;
 
-    // Ejecucion de la accion.
+    // Crea el nuevo elemento.
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1,
                                 permisos)) < 0)
     {
@@ -325,19 +305,20 @@ int mi_creat(const char *camino, unsigned char permisos)
 
 /* Funcion: mi_dir:
 * -----------------
-* Esta funcion devuelve el contenido del directorio en el buffer. La 
-* informacion de cada elemento del directorio es tipo, permisos, fecha de 
-* modificacion, tamaño y nombre y estan divididos por el caracter '|'.
+* Esta función devuelve el contenido del directorio o bien la información de un 
+* archivo en el buffer. La información de cada elemento del directorio es tipo, 
+* permisos, fecha de modificación, tamaño y nombre y estan divididos por el 
+* carácter '|'. Esta función requiere la función auxiliar formato_ls.
+* 
+*  camino: dirección del elemento
+*  buffer: buffer donde almacenará el contenido del directorio para imprimir.
 *
-*  camino: direccion del direcctorio 
-*  buffer: buffer donde almacenara el contenido del directorio para imprimir.
-*
-* returns: el total de entradas procesadas o bien el codigo de error para ser 
-*          procesado por la funcion mostrar_error_directorios.
+* returns: el total de entradas procesadas o bien el código de error para ser 
+*          procesado por la función mostrar_error_directorios.
 */
 int mi_dir(const char *camino, char *buffer)
 {
-    // Comprueba que el camino esta bien escrito.
+    // Comprueba que el camino está bien escrito.
     if (camino[0] != '/')
     {
         return ERROR_CAMINO_INCORRECTO;
@@ -348,7 +329,7 @@ int mi_dir(const char *camino, char *buffer)
     unsigned int p_entrada = 0;
     int error;
 
-    // Realiza la busqueda del directorio en el sistema de archivos.
+    // Realiza la búsqueda del elemento en el sistema de archivos.
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0,
                                 0)) < 0)
     {
@@ -360,14 +341,17 @@ int mi_dir(const char *camino, char *buffer)
     {
         return ERROR_ACCESO_DISCO;
     }
-    // Comprueba que el inodo pertenezca a un directorio.
+    // Comprueba si el inodo pertenece a un directorio.
     if (inodo.tipo != 'd')
     {
+        // Obtiene la entrada del archivo en el directorio padre.
         struct entrada entrada;
-        if (mi_read_f(p_inodo_dir, &entrada, p_entrada * sizeof(struct entrada), sizeof(struct entrada)) < 0)
+        if (mi_read_f(p_inodo_dir, &entrada, p_entrada * sizeof(struct entrada),
+                      sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
+        // Obtiene la información de la entrada y la guarda en el buffer.
         if ((error = formato_ls(entrada, buffer)) < 0)
         {
             return error;
@@ -394,15 +378,15 @@ int mi_dir(const char *camino, char *buffer)
     // Itera mientras haya entradas que leer.
     while (bytes > 0)
     {
-        // Numero de entradas que se han leido del disco.
+        // Número de entradas que se han leído del disco.
         int entradasBloque = bytes / sizeof(struct entrada);
         totalEntradas = totalEntradas + entradasBloque;
 
-        // Itera por todas las entradas leidas del disco.
+        // Itera por todas las entradas leídas del disco.
         int idx = 0;
         while (idx < entradasBloque)
         {
-            // Leer informacion del inodo.
+            // Obtiene la información de la entrada en el formato adecuado.
             if ((error = formato_ls(entradas[idx], buffer)) < 0)
             {
                 return error;
@@ -417,8 +401,21 @@ int mi_dir(const char *camino, char *buffer)
     return totalEntradas;
 }
 
+/* Funcion: formato_ls:
+* -----------------
+* Esta función devuelve el contenido de un elemento dentro de un buffer con el
+* formato adecuado para ejecutar un ls.
+* 
+*  entrada: dirección del elemento.
+*  buffer: buffer donde almacenará el contenido del directorio para imprimir.
+*
+* returns: Exit_Success si ha ido correctamente o código de error a procesar
+* por la función mostrar_error_directorios. 
+*          .
+*/
 int formato_ls(struct entrada entrada, char *buffer)
 {
+    // Obtiene la información del inodo de la entrada.
     struct STAT stat;
     if (mi_stat_f(entrada.ninodo, &stat))
     {
@@ -468,17 +465,17 @@ int formato_ls(struct entrada entrada, char *buffer)
 
 /* Funcion: mi_chmod:
 * -------------------
-* Esta funcion permite cambiar los permisos de un elemento.
+* Esta función permite cambiar los permisos de un elemento.
 *
-*  camino: direccion del elemento del cual se quiere cambiar los permisos.
+*  camino: dirección del elemento del cual se quiere cambiar los permisos.
 *  permisos: nuevos permisos que tendra el elemento.
 *
-* return: Devuelve Exit_Success si ha ido correctamente o bien un codigo de 
-*         error para la funcion mostrar_error_directorios.
+* return: Devuelve Exit_Success si ha ido correctamente o bien un código de 
+*         error para la función mostrar_error_directorios.
 */
 int mi_chmod(const char *camino, unsigned char permisos)
 {
-    // Inicializacion de las variables a utilizar.
+    // Inicialización de las variables a utilizar.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -491,7 +488,7 @@ int mi_chmod(const char *camino, unsigned char permisos)
         return error;
     }
 
-    //Modifica los permisos del elemento.
+    // Modifica los permisos del elemento.
     if (mi_chmod_f(p_inodo, permisos))
     {
         return ERROR_ACCESO_DISCO;
@@ -499,31 +496,31 @@ int mi_chmod(const char *camino, unsigned char permisos)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: mi_stat:
+/* Función: mi_stat:
 * ------------------
-* Esta funcion obtiene la metainformacion del elemento indicado por el camino.
+* Esta función obtiene la metainformación del elemento indicado por el camino.
 *
-*  camino: direccion del elemento a obtener la informacion.
-*  p_stat: metainformacion del elemento.
+*  camino: dirección del elemento a obtener la información.
+*  p_stat: metainformación del elemento.
 *
-* returns: el numero del inodo o bien un codigo de error si se ha prducido un 
+* returns: el número del inodo o bien un código de error si se ha prducido un 
 *          error al buscar el elemento.
 */
 int mi_stat(const char *camino, struct STAT *p_stat)
 {
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
     int error;
 
-    // Obtencion del inodo del elemento en el sistema de archivos.
+    // Obtención del inodo del elemento en el sistema de archivos.
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 0,
                                 0)) < 0)
     {
         return error;
     }
-    // Obtencion de la metainformacion.
+    // Obtención de la metainformación.
     if (mi_stat_f(p_inodo, p_stat))
     {
         return ERROR_ACCESO_DISCO;
@@ -535,7 +532,7 @@ int mi_stat(const char *camino, struct STAT *p_stat)
 * ------------------
 * Esta función permite la escritura del contenido de un buffer en un archivo.
 *
-*  camino: direccion del archivo donde se va a escribir.
+*  camino: dirección del archivo donde se va a escribir.
 *  buf: buffer con el contenido a escribir.
 *  offset: desplazamiento de bytes dentro del archivo.
 *  nbytes: tamaño en bytes de buffer.
@@ -545,7 +542,7 @@ int mi_stat(const char *camino, struct STAT *p_stat)
 int mi_write(const char *camino, const void *buf, unsigned int offset,
              unsigned int nbytes)
 {
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -555,7 +552,7 @@ int mi_write(const char *camino, const void *buf, unsigned int offset,
     // Revisa si este ha sido el último archivo accedido.
     if (strcmp(camino, UltimaEntradaEscritura.camino))
     {
-        // Obtencion del inodo del elemento en el sistema de archivos.
+        // Obtención del inodo del elemento en el sistema de archivos.
         if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada,
                                     0, 0)) < 0)
         {
@@ -564,28 +561,19 @@ int mi_write(const char *camino, const void *buf, unsigned int offset,
         // Actualiza la variable global del último fichero leído.
         strcpy(UltimaEntradaEscritura.camino, camino);
         UltimaEntradaEscritura.p_inodo = p_inodo;
-
-// Si DEBUG es 1 entonces se muestran los mensajes de depuración
 #if DEBUG
-
         printf("\n[mi_write() -> Actualizamos la caché de escritura]\n");
-
 #endif
     }
     else
     {
         // Utiliza el p_inodo de memoria.
         p_inodo = UltimaEntradaEscritura.p_inodo;
-
-// Si DEBUG es 1 entonces se muestran los mensajes de depuración
 #if DEBUG
-
         printf("\n[mi_write() -> Utilizamos la caché de escritura en vez de llam"
                "ar a buscar_entrada()]\n");
-
 #endif
     }
-
     // Realiza la escritura del buffer.
     bytes = mi_write_f(p_inodo, buf, offset, nbytes);
     if (bytes == -1)
@@ -595,11 +583,11 @@ int mi_write(const char *camino, const void *buf, unsigned int offset,
     return bytes;
 }
 
-/* Funcion: mi_read:
+/* Función: mi_read:
 * ------------------
 * Esta función permite la lectura del contenido de un archivo en un buffer.
 *
-*  camino: direccion del archivo donde se va a escribir.
+*  camino: dirección del archivo donde se va a escribir.
 *  buf: buffer con el contenido a escribir.
 *  offset: desplazamiento de bytes dentro del archivo.
 *  nbytes: tamaño en bytes de buffer.
@@ -609,7 +597,7 @@ int mi_write(const char *camino, const void *buf, unsigned int offset,
 int mi_read(const char *camino, void *buf, unsigned int offset,
             unsigned int nbytes)
 {
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -619,7 +607,7 @@ int mi_read(const char *camino, void *buf, unsigned int offset,
     // Revisa si este ha sido el último archivo accedido.
     if (strcmp(camino, UltimaEntradaLectura.camino))
     {
-        // Obtencion del inodo del elemento en el sistema de archivos.
+        // Obtención del inodo del elemento en el sistema de archivos.
         if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada,
                                     0, 0)) < 0)
         {
@@ -628,28 +616,19 @@ int mi_read(const char *camino, void *buf, unsigned int offset,
         // Actualiza la variable global del último fichero leído.
         strcpy(UltimaEntradaLectura.camino, camino);
         UltimaEntradaLectura.p_inodo = p_inodo;
-
-// Si DEBUG es 1 entonces se muestran los mensajes de depuración
 #if DEBUG
-
         printf("\n[mi_read() -> Actualizamos la caché de lectura]\n");
-
 #endif
     }
     else
     {
         // Utiliza el p_inodo de memoria.
         p_inodo = UltimaEntradaLectura.p_inodo;
-
-// Si DEBUG es 1 entonces se muestran los mensajes de depuración
 #if DEBUG
-
         printf("\n[mi_read() -> Utilizamos la caché de lectura en vez de llamar"
                "a buscar_entrada()]\n");
-
 #endif
     }
-
     // Realiza la lectura del archivo.
     bytes = mi_read_f(p_inodo, buf, offset, nbytes);
     if (bytes == -1)
@@ -659,20 +638,20 @@ int mi_read(const char *camino, void *buf, unsigned int offset,
     return bytes;
 }
 
-/* Funcion: mi_link:
+/* Función: mi_link:
 * ------------------
-* Esta funcion crea un link al contenido de un fichero en una nueva 
-* localizacion.
+* Esta función crea un link al contenido de un fichero en una nueva 
+* localización.
 * 
-*  camino1: direccion del archivo a linkear.
-*  camino2: direccion donde se crea el link al archivo.
+*  camino1: dirección del archivo a linkear.
+*  camino2: dirección donde se crea el link al archivo.
 *
-* return: Exit_Success o codigo de error a procesar por 
+* return: Exit_Success o código de error a procesar por 
 *         mostrar_error_directorio.
 */
 int mi_link(const char *camino1, const char *camino2)
 {
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir1 = 0;
     unsigned int p_inodo1 = 0;
     unsigned int p_entrada1 = 0;
@@ -684,7 +663,6 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return error;
     }
-
     // Lee el inodo relacionado con el archivo a linkear.
     struct inodo inodo1;
     if (leer_inodo(p_inodo1, &inodo1))
@@ -696,7 +674,7 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_PERMISO_LECTURA;
     }
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir2 = 0;
     unsigned int p_inodo2 = 0;
     unsigned int p_entrada2 = 0;
@@ -707,7 +685,6 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return error;
     }
-
     // Lee la entrada del link en el directorio.
     struct entrada entrada2;
     if (mi_read_f(p_inodo_dir2, &entrada2,
@@ -716,7 +693,6 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_ACCESO_DISCO;
     }
-
     // Actualiza el inodo enlazado al camino.
     entrada2.ninodo = p_inodo1;
 
@@ -727,13 +703,11 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_ACCESO_DISCO;
     }
-
     // Libera el inodo creado con el buscar_entrada del link.
     if (liberar_inodo(p_inodo2) < 0)
     {
         return ERROR_ACCESO_DISCO;
     }
-
     // Actualiza los metadatos el inodo del archivo 1 y lo guarda.
     inodo1.nlinks = inodo1.nlinks + 1;
     inodo1.ctime = time(NULL);
@@ -746,17 +720,17 @@ int mi_link(const char *camino1, const char *camino2)
 
 /* Funcion: mi_unlink:
 * --------------------
-* Borra la entrada de directorio especificada, esta funcion sirve tanto para
+* Borra la entrada de directorio especificada, esta función sirve tanto para
 * borrar un enlace a un fichero como el contenido de este si no quedan enlaces.
 *
-*  camino: direccion del archivo a borrar.
+*  camino: dirección del archivo a borrar.
 *
-* returns: Exit_Success o bien un codigo de error para ser tratado por 
+* returns: Exit_Success o bien un código de error para ser tratado por 
 *          mostrar_error_directorios.
 */
 int mi_unlink(const char *camino)
 {
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -774,7 +748,7 @@ int mi_unlink(const char *camino)
     {
         return ERROR_ACCESO_DISCO;
     }
-    // Comprueba si es un directorio y esta vacio.
+    // Comprueba si es un directorio y está vacío.
     if (inodo.tipo == 'd' && inodo.tamEnBytesLog > 0)
     {
         return ERROR_DIRECTORIO_NO_VACIO;
@@ -785,21 +759,22 @@ int mi_unlink(const char *camino)
     {
         return ERROR_ACCESO_DISCO;
     }
-    // Obtiene el numero de entradas que contiene el directorio.
+    // Obtiene el número de entradas que contiene el directorio.
     int num_entradas = inodo_dir.tamEnBytesLog / sizeof(struct entrada);
 
-    // Comprueba si la entrada a eliminar es la ultima.
+    // Comprueba si la entrada a eliminar es la última.
     if (p_entrada == num_entradas - 1)
     {
-        // Elimina la ultima entrada.
-        if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog - sizeof(struct entrada)) < 0)
+        // Elimina la última entrada.
+        if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog -
+                                          sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
     }
     else
     {
-        // Lee la ultima entrada del directorio.
+        // Lee la última entrada del directorio.
         struct entrada entrada;
         if (mi_read_f(p_inodo_dir, &entrada,
                       sizeof(struct entrada) * (num_entradas - 1),
@@ -807,20 +782,21 @@ int mi_unlink(const char *camino)
         {
             return ERROR_ACCESO_DISCO;
         }
-        // Escribe la ultima entrada en la posicion de la entrada a borrar.
+        // Escribe la última entrada en la posición de la entrada a borrar.
         if (mi_write_f(p_inodo_dir, &entrada,
                        sizeof(struct entrada) * p_entrada,
                        sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
-        // Elimina la ultima entrada.
-        if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog - sizeof(struct entrada)) < 0)
+        // Elimina la última entrada.
+        if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog -
+                                          sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
     }
-    // Decrementa el numero de enlaces al inodo.
+    // Decrementa el número de enlaces al inodo.
     inodo.nlinks = inodo.nlinks - 1;
 
     // Si no quedan enlaces al inodo entonces se elimina.
@@ -843,19 +819,19 @@ int mi_unlink(const char *camino)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: mi_unlink_r:
+/* Función: mi_unlink_r:
 * ----------------------
-* Esta funcion borra de forma recursiva todos los elementos dentro de la 
+* Esta función borra de forma recursiva todos los elementos dentro de la 
 * estructura de directorios.
 *
-*  camino: ruta del directorio donde comienza la eliminacion de elementos.
+*  camino: ruta del directorio donde comienza la eliminación de elementos.
 *
-* returns: Exit_Success o bien un codigo de error a ser tratado por 
+* returns: Exit_Success o bien un código de error a ser tratado por 
 *          mostrar_error_directorios. 
 */
 int mi_unlink_r(const char *camino)
 {
-    // Inicializacion de las variables.
+    // Inicialización de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
     unsigned int p_entrada = 0;
@@ -885,7 +861,7 @@ int mi_unlink_r(const char *camino)
         int offset = offset + leidos;
         int entradas = 0;
 
-        // Recorre todas las entradas leidas.
+        // Recorre todas las entradas leídas.
         while (entradas < (leidos / sizeof(struct entrada)))
         {
             // Lee el inodo de la entrada.
@@ -894,19 +870,17 @@ int mi_unlink_r(const char *camino)
             {
                 return ERROR_ACCESO_DISCO;
             }
-
-            printf("tipo : %c \n", inodo.tipo);
-
             // Comprueba si es un directorio.
             if (inodo.tipo == 'd')
             {
+                // Genera el camino para la recursividad.
                 char subcamino[60];
                 memset(subcamino, 0, sizeof(char) * 60);
                 strcat(subcamino, camino);
                 strcat(subcamino, entrada[entradas].nombre);
                 strcat(subcamino, "/");
-                printf("Camino : %s\n", subcamino);
-                // Si es un directorio, entonces llama a la funcion otra vez.
+
+                // Si es un directorio, entonces llama a la función otra vez.
                 if ((error = mi_unlink_r(subcamino)) < 0)
                 {
                     return error;
@@ -914,10 +888,12 @@ int mi_unlink_r(const char *camino)
             }
             else
             {
+                // Genera el camino para el borrado del archivo.
                 char subcamino[60];
                 memset(subcamino, 0, sizeof(char) * 60);
                 strcat(subcamino, camino);
                 strcat(subcamino, entrada[entradas].nombre);
+
                 // Si es un fichero, borra este del sistema.
                 if ((error = mi_unlink(subcamino)) < 0)
                 {
@@ -933,7 +909,7 @@ int mi_unlink_r(const char *camino)
             return ERROR_ACCESO_DISCO;
         }
     }
-    // Elimina el directorio indicado por parametro.
+    // Elimina el directorio indicado por parámetro.
     if ((error = mi_unlink(camino)) < 0)
     {
         return error;
@@ -941,12 +917,12 @@ int mi_unlink_r(const char *camino)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: mostrar_error_directorios:
+/* Función: mostrar_error_directorios:
 * ------------------------------------
-* Esta funcion trata los error producidos por las funciones de la libreria 
-* directorios, mostrando la excepcion por pantalla.
+* Esta función trata los error producidos por las funciones de la librería 
+* directorios, mostrando la excepción por pantalla.
 *
-*  error: codigo de error.
+*  error: código de error.
 */
 void mostrar_error_directorios(int error)
 {
@@ -977,6 +953,6 @@ void mostrar_error_directorios(int error)
         fprintf(stderr, "Error: No se ha podico acceder a disco.\n");
         break;
     case -9:
-        fprintf(stderr, "Error: El directorio no esta vacio.\n");
+        fprintf(stderr, "Error: El directorio no esta vacío.\n");
     }
 }

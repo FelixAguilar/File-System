@@ -1,23 +1,31 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno.
 #include "directorios.h"
 
+/* Fichero: mi_ls.c:
+* --------------------
+* Permite mostrar el contenido de un directorio o bien la información de un 
+* fichero por pantalla.
+*
+*  argc: número de argumentos introducidos.
+*  argv: char array de los argumentos introducidos.
+*
+*  returns: Exit_Success o si se produce un error Exit_Failure.
+*/
 int main(int argc, char const *argv[])
 {
     // Comprueba que la sintaxis sea correcta.
     if (argc != 3)
     {
         fprintf(stderr,
-                "Error de sintaxis: ./mi_ls <disco></ruta_directorio>\n");
+                "Error de sintaxis: ./mi_ls <disco> </ruta_directorio>\n");
         return EXIT_FAILURE;
     }
-
     // Monta el disco en el sistema.
     if (bmount(argv[1]) == -1)
     {
         fprintf(stderr, "Error de montaje de disco.\n");
         return EXIT_FAILURE;
     }
-
     char buffer[TAMBUFFER];
     memset(buffer, 0 , TAMBUFFER);
     int total;
@@ -39,7 +47,6 @@ int main(int argc, char const *argv[])
             loc = strchr(loc + 1, '|');
         }
         printf("%s\n", buffer);
-        
     }
     else{
         printf("Total: %d\n", total);

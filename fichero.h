@@ -8,6 +8,7 @@
 #include <time.h>            // para el guardado de tiempos.
 #include "ficheros_basico.h" // enlace a la libreria ficheros_basico.h.
 
+// Estructura para los metadatos del inodo.
 struct STAT
 {
     char tipo;     // Tipo ('l':libre, 'd':directorio o 'f':fichero).

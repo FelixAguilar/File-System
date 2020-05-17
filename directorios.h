@@ -22,12 +22,14 @@
 #define TAMFILA 100
 #define TAMBUFFER (TAMFILA * 1000)
 
+// Estructura para las entradas de archivos y directorios en el sistema.
 struct entrada
 {
     char nombre[60];
     unsigned int ninodo;
 };
 
+// Estructura de la última entrada realizada.
 struct UltimaEntrada
 {
     char camino[512];

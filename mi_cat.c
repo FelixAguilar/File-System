@@ -1,12 +1,14 @@
 // Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "directorios.h"
 
-/* Fichero: leer.c:
-* -----------------
-* Lee el contenido de un inodo y permite mostrarlo por pantalla o bien 
-* redirigirlo a un fichero.
+/* Fichero: mi_cat.c
+* ------------------
+* Lee el contenido de un fichero y lo vuelca en un archivo o en pantalla. 
 *
-* returns: Exit_Success o si se produce un error Exit_Failure.
+*  argc: número de argumentos introducidos.
+*  argv: char array de los argumentos introducidos.
+*
+*  returns: Exit_Success o si se produce un error Exit_Failure.
 */
 int main(int argc, char const *argv[])
 {
@@ -16,14 +18,12 @@ int main(int argc, char const *argv[])
         fprintf(stderr, "Sintaxis: mi_cat <disco> </ruta_fichero>\n");
         return EXIT_FAILURE;
     }
-
     // Monta el dispositivo en el sistema.
     if (bmount(argv[1]) == -1)
     {
         fprintf(stderr, "Error al montar el dispositivo en el sistema.\n");
         return EXIT_FAILURE;
     }
-
     // Inicializa las variables utilizadas para la lectura.
     int offset = 0;
     int tamBuffer = 4096;
@@ -50,12 +50,10 @@ int main(int argc, char const *argv[])
         offset = offset + tamBuffer;
         leidos = mi_read(argv[2], buffer, offset, tamBuffer);
     }
-
     if(leidos < 0)
     {
         mostrar_error_directorios(leidos);
     }
-
     // Muestra el número de bytes leídos.
     fprintf(stderr, "\n\ntotal_leidos: %d\n", bytes);
 

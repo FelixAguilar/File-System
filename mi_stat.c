@@ -5,7 +5,10 @@
 * --------------------
 * Este archivo permite mostrar los metadatos de un inodo.
 *
-* returns: Exit_Success o bien Exit_Failure si se produce un error.
+*  argc: número de argumentos introducidos.
+*  argv: char array de los argumentos introducidos.
+*
+*  returns: Exit_Success o bien Exit_Failure si se produce un error.
 */
 int main(int argc, char const *argv[])
 {
@@ -13,7 +16,7 @@ int main(int argc, char const *argv[])
     if (argc != 3)
     {
         fprintf(stderr,
-                "Error de sintaxis: ./mi_chmod <disco></ruta>\n");
+                "Error de sintaxis: ./mi_chmod <disco> </ruta>\n");
         return EXIT_FAILURE;
     }
     // Monta el disco en el sistema.
