@@ -35,6 +35,7 @@ int main(int argc, char const *argv[])
     {
         // Muestra si ha habido un error.
         mostrar_error_directorios(bytes_escritos);
+        printf("Bytes escritos: 0\n");
         return EXIT_FAILURE;
     }
     else

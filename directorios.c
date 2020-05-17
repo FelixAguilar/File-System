@@ -160,21 +160,21 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                hayan procesado todas las entradas de este o bien encontrado el 
                elemento inicial.*/
             int numEntradaArray = 0;
-            printf("bytes: %d\n", bytes);
-            while (numEntradaArray < (bytes / sizeof(struct entrada)) -1 &&
+            //printf("bytes: %d\n", bytes);
+            while (numEntradaArray < ((bytes / sizeof(struct entrada)) - 1) &&
                    strcmp(entradas[numEntradaArray].nombre, inicial) &&
                    (numEntradaInodo < cantEntradasInodo))
             {
                 // Avanza dentro de las entradas del inodo.
                 numEntradaArray++;
                 numEntradaInodo++;
-                printf( "%d y %s\n", numEntradaArray , entradas[numEntradaArray].nombre);
+                //printf("%d y %s\n", numEntradaArray , entradas[numEntradaArray].nombre);
             }
 
-            printf ("strcmp (%s, %s)\n", entradas[numEntradaArray].nombre, inicial);
+            //printf ("strcmp (%s, %s)\n", entradas[numEntradaArray].nombre, inicial);
 
-            // Si el elemento se ha encontrado, copia sus datos en entrada.
-            if (!strcmp(entradas[numEntradaArray].nombre, inicial))
+            //Si el elemento se ha encontrado, copia sus datos en entrada.
+            if (cantEntradasInodo != numEntradaInodo && !strcmp(entradas[numEntradaArray].nombre, inicial))
             {
                 strcpy(entrada.nombre, entradas[numEntradaArray].nombre);
                 entrada.ninodo = entradas[numEntradaArray].ninodo;
@@ -182,7 +182,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
         }
     }
 
-    printf("%d == %d && strcmp(%s, %s)\n", cantEntradasInodo, numEntradaInodo , entrada.nombre, inicial);
+    //printf("%d == %d && strcmp(%s, %s)\n", cantEntradasInodo, numEntradaInodo , entrada.nombre, inicial);
 
     // Si inicial no se ha encontrado y se han procesado todas las entradas.
     if (cantEntradasInodo == numEntradaInodo && strcmp(entrada.nombre, inicial))
@@ -260,7 +260,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                 if (mi_write_f(*(p_inodo_dir), &entrada, inodo.tamEnBytesLog,
                                sizeof(struct entrada)) == -1)
                 {
-                    printf("hoalaa");
                     liberar_inodo(entrada.ninodo);
                     return EXIT_FAILURE;
                 }
@@ -339,7 +338,7 @@ int mi_creat(const char *camino, unsigned char permisos)
 int mi_dir(const char *camino, char *buffer)
 {
     // Comprueba que el camino esta bien escrito.
-    if (camino[strlen(camino) - 1] != '/')
+    if (camino[0] != '/')
     {
         return ERROR_CAMINO_INCORRECTO;
     }
@@ -364,7 +363,16 @@ int mi_dir(const char *camino, char *buffer)
     // Comprueba que el inodo pertenezca a un directorio.
     if (inodo.tipo != 'd')
     {
-        return ERROR_NO_ES_UN_DIRECTORIO;
+        struct entrada entrada;
+        if (mi_read_f(p_inodo_dir, &entrada, p_entrada * sizeof(struct entrada), sizeof(struct entrada)) < 0)
+        {
+            return ERROR_ACCESO_DISCO;
+        }
+        if ((error = formato_ls(entrada, buffer)) < 0)
+        {
+            return error;
+        }
+        return 1;
     }
     // Comprueba que el directorio tenga permisos de lectura.
     if ((inodo.permisos & 4) != 4)
@@ -395,50 +403,10 @@ int mi_dir(const char *camino, char *buffer)
         while (idx < entradasBloque)
         {
             // Leer informacion del inodo.
-            struct STAT stat;
-            if (mi_stat_f(entradas[idx].ninodo, &stat))
+            if ((error = formato_ls(entradas[idx], buffer)) < 0)
             {
-                return ERROR_ACCESO_DISCO;
+                return error;
             }
-            // Escribir entrada en el buffer con el formato adecuado.
-            char array[11];
-            sprintf(array, "%c\t", stat.tipo);
-            strcat(buffer, array);
-            if (stat.permisos & 4)
-            {
-                strcat(buffer, "r");
-            }
-            else
-            {
-                strcat(buffer, "-");
-            }
-            if (stat.permisos & 2)
-            {
-                strcat(buffer, "w");
-            }
-            else
-            {
-                strcat(buffer, "-");
-            }
-            if (stat.permisos & 1)
-            {
-                strcat(buffer, "x\t\t");
-            }
-            else
-            {
-                strcat(buffer, "-\t\t");
-            }
-            struct tm *tm;
-            char tmp[100];
-            tm = localtime(&stat.mtime);
-            sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d\t", tm->tm_year + 1900,
-                    tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min,
-                    tm->tm_sec);
-            strcat(buffer, tmp);
-            sprintf(array, "%d\t", stat.tamEnBytesLog);
-            strcat(buffer, array);
-            strcat(buffer, entradas[idx].nombre);
-            strcat(buffer, "|");
             idx++;
         }
         // Leer siguiente bloque de entradas del disco.
@@ -447,6 +415,55 @@ int mi_dir(const char *camino, char *buffer)
         bytes = mi_read_f(p_inodo, &entradas, offset, BLOCKSIZE);
     }
     return totalEntradas;
+}
+
+int formato_ls(struct entrada entrada, char *buffer)
+{
+    struct STAT stat;
+    if (mi_stat_f(entrada.ninodo, &stat))
+    {
+        return ERROR_ACCESO_DISCO;
+    }
+    // Escribir entrada en el buffer con el formato adecuado.
+    char array[11];
+    sprintf(array, "%c\t", stat.tipo);
+    strcat(buffer, array);
+    if (stat.permisos & 4)
+    {
+        strcat(buffer, "r");
+    }
+    else
+    {
+        strcat(buffer, "-");
+    }
+    if (stat.permisos & 2)
+    {
+        strcat(buffer, "w");
+    }
+    else
+    {
+        strcat(buffer, "-");
+    }
+    if (stat.permisos & 1)
+    {
+        strcat(buffer, "x\t\t");
+    }
+    else
+    {
+        strcat(buffer, "-\t\t");
+    }
+    struct tm *tm;
+    char tmp[100];
+    tm = localtime(&stat.mtime);
+    sprintf(tmp, "%d-%02d-%02d %02d:%02d:%02d\t", tm->tm_year + 1900,
+            tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min,
+            tm->tm_sec);
+    strcat(buffer, tmp);
+    sprintf(array, "%d\t", stat.tamEnBytesLog);
+    strcat(buffer, array);
+    strcat(buffer, entrada.nombre);
+    strcat(buffer, "|");
+    return EXIT_SUCCESS;
 }
 
 /* Funcion: mi_chmod:
@@ -775,7 +792,7 @@ int mi_unlink(const char *camino)
     if (p_entrada == num_entradas - 1)
     {
         // Elimina la ultima entrada.
-        if (mi_truncar_f(p_inodo_dir, sizeof(struct entrada)))
+        if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog - sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
@@ -792,13 +809,13 @@ int mi_unlink(const char *camino)
         }
         // Escribe la ultima entrada en la posicion de la entrada a borrar.
         if (mi_write_f(p_inodo_dir, &entrada,
-                       sizeof(struct entrada) * p_entrada - 1,
+                       sizeof(struct entrada) * p_entrada,
                        sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
         // Elimina la ultima entrada.
-        if (mi_truncar_f(p_inodo_dir, sizeof(struct entrada)))
+        if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog - sizeof(struct entrada)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }
@@ -848,16 +865,16 @@ int mi_unlink_r(const char *camino)
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo,
                                 &p_entrada, 0, 0)) < 0)
     {
+        printf("%s\n", camino);
         return error;
     }
     // Variables para la lectura del contenido del inodo.
     struct entrada entrada[BLOCKSIZE / sizeof(struct entrada)];
-    int tam_entrada = BLOCKSIZE / sizeof(struct entrada);
     int offset = 0;
     int leidos;
 
     // Lee el contenido del inodo.
-    if ((leidos = mi_read_f(p_inodo, &entrada, offset, tam_entrada)) < 0)
+    if ((leidos = mi_read_f(p_inodo, &entrada, offset, BLOCKSIZE)) < 0)
     {
         return ERROR_ACCESO_DISCO;
     }
@@ -866,10 +883,10 @@ int mi_unlink_r(const char *camino)
     {
         // Actualiza el offset de lectura e indice.
         int offset = offset + leidos;
-        int entradas = leidos / sizeof(struct entrada);
+        int entradas = 0;
 
         // Recorre todas las entradas leidas.
-        while (entradas)
+        while (entradas < (leidos / sizeof(struct entrada)))
         {
             // Lee el inodo de la entrada.
             struct inodo inodo;
@@ -877,28 +894,41 @@ int mi_unlink_r(const char *camino)
             {
                 return ERROR_ACCESO_DISCO;
             }
+
+            printf("tipo : %c \n", inodo.tipo);
+
             // Comprueba si es un directorio.
             if (inodo.tipo == 'd')
             {
+                char subcamino[60];
+                memset(subcamino, 0, sizeof(char) * 60);
+                strcat(subcamino, camino);
+                strcat(subcamino, entrada[entradas].nombre);
+                strcat(subcamino, "/");
+                printf("Camino : %s\n", subcamino);
                 // Si es un directorio, entonces llama a la funcion otra vez.
-                if ((error = mi_unlink_r(entrada[entradas].nombre)) < 0)
+                if ((error = mi_unlink_r(subcamino)) < 0)
                 {
                     return error;
                 }
             }
             else
             {
+                char subcamino[60];
+                memset(subcamino, 0, sizeof(char) * 60);
+                strcat(subcamino, camino);
+                strcat(subcamino, entrada[entradas].nombre);
                 // Si es un fichero, borra este del sistema.
-                if ((error = mi_unlink(entrada[entradas].nombre)) < 0)
+                if ((error = mi_unlink(subcamino)) < 0)
                 {
                     return error;
                 }
             }
             // Procesa siquiente entrada.
-            entradas--;
+            entradas++;
         }
         // Lee siguiente conjunto de entradas.
-        if ((leidos = mi_read_f(p_inodo, &entrada, offset, tam_entrada)) < 0)
+        if ((leidos = mi_read_f(p_inodo, &entrada, offset, BLOCKSIZE)) < 0)
         {
             return ERROR_ACCESO_DISCO;
         }

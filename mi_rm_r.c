@@ -16,7 +16,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
     // Comprueba que es un directorio y no es el directorio raiz.
-    if (argv[2][strlen(argv[2] - 1) != '/'])
+    if ((argv[2][strlen(argv[2]) - 1] != '/'))
     {
         fprintf(stderr, "Error: La ruta proporcionada no es un directorio.\n");
         return EXIT_FAILURE;

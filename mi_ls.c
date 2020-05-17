@@ -41,6 +41,9 @@ int main(int argc, char const *argv[])
         printf("%s\n", buffer);
         
     }
+    else{
+        printf("Total: %d\n", total);
+    }
     bumount();
     return EXIT_SUCCESS;
 }

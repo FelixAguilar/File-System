@@ -5,7 +5,7 @@
 #include "fichero.h"
 
 // Imprime los mensajes de ejecucion.
-#define DEBUG 1
+#define DEBUG 0
 
 // Errores de directorios.
 #define ERROR_CAMINO_INCORRECTO -1
@@ -40,6 +40,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                    char reservar, unsigned char permisos);
 int mi_creat(const char *camino, unsigned char permisos);
 int mi_dir(const char *camino, char *buffer);
+int formato_ls(struct entrada entrada, char *buffer);
 int mi_chmod(const char *camino, unsigned char permisos);
 int mi_stat(const char *camino, struct STAT *p_stat);
 int mi_write(const char *camino, const void *buf, unsigned int offset,
