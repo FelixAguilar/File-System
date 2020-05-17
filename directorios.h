@@ -5,7 +5,7 @@
 #include "fichero.h"
 
 // Imprime los mensajes de ejecucion.
-#define DEBUG 0
+#define DEBUG 1
 
 // Errores de directorios.
 #define ERROR_CAMINO_INCORRECTO -1

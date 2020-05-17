@@ -151,7 +151,8 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
             }
             // Lee el contenido del bloque de entradas.
             memset(entradas, 0, BLOCKSIZE);
-            if (bread(bloquef, entradas) == -1)
+            int bytes;
+            if ((bytes = bread(bloquef, entradas)) == -1)
             {
                 return ERROR_ACCESO_DISCO;
             }
@@ -159,14 +160,19 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                hayan procesado todas las entradas de este o bien encontrado el 
                elemento inicial.*/
             int numEntradaArray = 0;
-            while (numEntradaArray < (BLOCKSIZE / sizeof(struct entrada)) &&
+            printf("bytes: %d\n", bytes);
+            while (numEntradaArray < (bytes / sizeof(struct entrada)) -1 &&
                    strcmp(entradas[numEntradaArray].nombre, inicial) &&
                    (numEntradaInodo < cantEntradasInodo))
             {
                 // Avanza dentro de las entradas del inodo.
                 numEntradaArray++;
                 numEntradaInodo++;
+                printf( "%d y %s\n", numEntradaArray , entradas[numEntradaArray].nombre);
             }
+
+            printf ("strcmp (%s, %s)\n", entradas[numEntradaArray].nombre, inicial);
+
             // Si el elemento se ha encontrado, copia sus datos en entrada.
             if (!strcmp(entradas[numEntradaArray].nombre, inicial))
             {
@@ -175,6 +181,9 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
             }
         }
     }
+
+    printf("%d == %d && strcmp(%s, %s)\n", cantEntradasInodo, numEntradaInodo , entrada.nombre, inicial);
+
     // Si inicial no se ha encontrado y se han procesado todas las entradas.
     if (cantEntradasInodo == numEntradaInodo && strcmp(entrada.nombre, inicial))
     {
@@ -251,6 +260,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                 if (mi_write_f(*(p_inodo_dir), &entrada, inodo.tamEnBytesLog,
                                sizeof(struct entrada)) == -1)
                 {
+                    printf("hoalaa");
                     liberar_inodo(entrada.ninodo);
                     return EXIT_FAILURE;
                 }
