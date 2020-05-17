@@ -142,7 +142,6 @@ echo "$ ./mi_stat /dir1/dir11/fic112 "
 echo "$ ./mi_cat /dir1/dir11/fic112 "
 ./mi_cat disco /dir1/dir11/fic112 
 echo
-
 echo "######################################################################"
 echo "NIVEL 10: ENLACES Y BORRADO"
 echo "######################################################################"
@@ -199,9 +198,9 @@ echo "$ ./mi_link disco /dir1/dir11/fic113 /dir2/dir21/fic211"
 echo "#camino2 NO ha de existir"
 ./mi_link disco /dir1/dir11/fic113 /dir2/dir21/fic211 #camino2 NO ha de existir 
 echo "######################################################################"
-echo "$ ./mi_rm disco /dir2/dir21/ #o mi_rmdir"
+echo "$ ./mi_rmdir disco /dir2/dir21/"
 echo "#Error: El directorio /dir2/dir21/ no está vacío"
-./mi_rm disco /dir2/dir21/ 
+./mi_rmdir disco /dir2/dir21/ 
 echo "$ ./mi_rm disco /dir2/dir21/fic211"
 ./mi_rm disco /dir2/dir21/fic211
 echo "$ ./mi_stat disco /dir1/dir11/fic113 #Hemos borrado 1 enlace"
@@ -214,8 +213,8 @@ echo "$ ./leer_sf disco"
 ./leer_sf disco
 echo "$ ./mi_rm disco /dir2/dir21/fic211 #ya no existe"
 ./mi_rm disco /dir2/dir21/fic211
-echo "$ ./mi_rm disco /dir2/dir21/" #o mi_rmdir
-./mi_rm disco /dir2/dir21/
+echo "$ ./mi_rmdir disco /dir2/dir21/"
+./mi_rmdir disco /dir2/dir21/
 echo "$ ./mi_ls disco /dir2/"
 ./mi_ls disco /dir2/
 
@@ -266,8 +265,8 @@ echo "$ ./mi_ls disco /dir3/"
 ./mi_ls disco /dir3/
 echo "######################################################################"
 echo "Eliminamos el subdirectorio sd3 de dir3"
-echo "$ ./mi_rm disco /dir3/sd3/"
-./mi_rm disco /dir3/sd3/
+echo "$ ./mi_rmdir disco /dir3/sd3/"
+./mi_rmdir disco /dir3/sd3/
 echo "######################################################################"
 echo
 echo "             /"
