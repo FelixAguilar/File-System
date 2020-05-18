@@ -1,7 +1,7 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "fichero.h"
 
-/* Funcion: mi_write_f:
+/* Función: mi_write_f:
 * ---------------------
 * Esta función permite escribir el contenido del buffer en la unidad virtual.
 *
@@ -141,7 +141,7 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     return bytes_escritos;
 }
 
-/* Funcion: mi_read_f:
+/* Función: mi_read_f:
 * ---------------------
 * Esta función permite leer el contenido del buffer en la unidad virtual.
 *
@@ -196,7 +196,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
             {
                 return leidos;
             }
-
             memcpy(buf_original, buffer + desp1, nbytes);
         }
         leidos = nbytes;
@@ -229,7 +228,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
             }
             leidos += BLOCKSIZE;
         }
-
         bloquef = traducir_bloque_inodo(ninodo, bloqueLF, 0);
 
         // Lee el último bloque.
@@ -243,7 +241,6 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
         }
         leidos += desp2 + 1;
     }
-
     if (leer_inodo(ninodo, &inodo))
     {
         return leidos;

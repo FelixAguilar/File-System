@@ -27,7 +27,7 @@ int bmount(const char *camino)
  *  nbloque: posición del bloque que se quiere leer.
  *  buf: dirección de memoria del buffer para guardar el valor.
  * 
- * returns: número de bytes leidos o bien -1 si se produce un error.
+ * returns: número de bytes leídos o bien -1 si se produce un error.
 */
 int bread(unsigned int nbloque, void *buf)
 {
@@ -41,7 +41,6 @@ int bread(unsigned int nbloque, void *buf)
             size_t bytes = read(descriptor, buf, BLOCKSIZE);
             if (bytes != -1)
             {
-
                 // Si no hubo errores, devuelve el número de bytes leídos.
                 return bytes;
             }
@@ -84,7 +83,7 @@ int bwrite(unsigned int nbloque, const void *buf)
 }
 
 /*
-* Function: bumount:
+* Función: bumount:
 * ------------------
 * Libera el descriptor de ficheros con la función close() 
 *

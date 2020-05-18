@@ -3,7 +3,7 @@
 
 /* Fichero: mi_link.c:
 * --------------------
-* Permite la creacion de enlaces a archivos desde otras ubicaciones del 
+* Permite la creación de enlaces a archivos desde otras ubicaciones del 
 * dispositivo.
 *
 *  argc: número de argumentos introducidos.
@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
                         "ruta_enlace>\n");
         return EXIT_FAILURE;
     }
-    //Comprueba que los caminos proporcionados son fichero.
+    // Comprueba que los caminos proporcionados son fichero.
     if (argv[2][strlen(argv[2]) - 1] == '/' || argv[3][strlen(argv[3]) - 1] ==
                                                    '/')
     {

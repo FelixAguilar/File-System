@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
     // Mientras lea contenido del archivo realizamos el bucle.
     while (leidos > 0)
     {
-        // Actualiza el número de bytes leidos.
+        // Actualiza el número de bytes leídos.
         bytes = bytes + leidos;
 
         // Escribe el contenido del buffer en el destino indicado.

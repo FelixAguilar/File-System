@@ -1,4 +1,4 @@
-// Autores: Felix Aguilar, Adrian Bennasar, Alvaro Bueno.
+// Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno.
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

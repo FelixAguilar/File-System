@@ -7,13 +7,13 @@ struct UltimaEntrada UltimaEntradaLectura;
 
 /* Función: extraer_camino:
 * -------------------------
-* Esta función descompone el camino indicado por parametro en dos, inicial y 
-* final, los cuales son el siguiente paso y los proximos pasos en el camino 
+* Esta función descompone el camino indicado por parámetro en dos, inicial y 
+* final, los cuales son el siguiente paso y los próximos pasos en el camino 
 * respectivamente.
 * 
 *  camino: dirección del fichero del dispositivo virtual.
-*  inicial: directorio o fichero mas proximo al directorio actual.
-*  final: camino restante despues de inicial.
+*  inicial: directorio o fichero más próximo al directorio actual.
+*  final: camino restante después de inicial.
 *  tipo: indica si inicial es un fichero o un directorio.
 *
 * returns: Exit_Success o bien Exit_Failure si se produce un error
@@ -26,18 +26,18 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
         return EXIT_FAILURE;
     }
 
-    // Localiza la primera barra despues de la inicial.
+    // Localiza la primera barra después de la inicial.
     char *f = strchr((camino + 1), '/');
     *(tipo) = 'f';
 
-    // Dependiendo de si existe el caracter '/' se realiza lo siguiente.
+    // Dependiendo de si existe el carácter '/' se realiza lo siguiente.
     if (f)
     {
-        // Si existe, recoje el elemento inicial y el resto lo guarda en final.
+        // Si existe, recoge el elemento inicial y el resto lo guarda en final.
         strncpy(inicial, (camino + 1), (strlen(camino) - strlen(f) - 1));
         strcpy(final, f);
 
-        // Si el primer caracter de final es '/', inicial es un directorio.
+        // Si el primer carácter de final es '/', inicial es un directorio.
         if (final[0] == '/')
         {
             *(tipo) = 'd';
@@ -45,7 +45,7 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
     }
     else
     {
-        // Si no existe, copia camino en inicial y final lo indica como vacio.
+        // Si no existe, copia camino en inicial y final lo indica como vacío.
         strcpy(inicial, (camino + 1));
         final[0] = '\0';
     }
@@ -55,18 +55,18 @@ int extraer_camino(const char *camino, char *inicial, char *final, char *tipo)
 
 /* Función: buscar_entrada:
 * -------------------------
-* Esta funcion buscara una determinada entrada en el sistema de archivos, la 
-* cual dependiendo del valor de reservar, reservara o no un inodo para el 
-* elemento. Ademas de esto devuelve el identificador de su inodo.
+* Esta función buscará una determinada entrada en el sistema de archivos, la 
+* cual dependiendo del valor de reservar, reservará o no un inodo para el 
+* elemento. Además de esto devuelve el identificador de su inodo.
 *
 *  camino_parcial: camino a recorrer para llegar al destino.
 *  p_inodo_dir: identificador del inodo del directorio padre.
 *  p_inodo: identificador del inodo del destino a obtener.
-*  p_entrada: numero de entrada dentro del directorio padre.
+*  p_entrada: número de entrada dentro del directorio padre.
 *  reservar: indicador si se ha de crear un nuevo elemento o no (1 o 0).
 *  permisos: permisos a tener por el nuevo elemento (si reservar = 1).
 *
-* return: Devuelve un código de error para ser procesado por la función 
+* return: devuelve un código de error para ser procesado por la función 
 *         mostrar_error_directorios si es menor que 0. Si ha sido correcta la
 *         ejecución devolverá Exit_Success.
 */
@@ -74,7 +74,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
                    unsigned int *p_inodo, unsigned int *p_entrada,
                    char reservar, unsigned char permisos)
 {
-    // Si el camino percial es la raiz.
+    // Si el camino percial es la raíz.
     if (!strcmp(camino_parcial, "/"))
     {
         // Lee el superbloque.
@@ -83,7 +83,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
         {
             return ERROR_ACCESO_DISCO;
         }
-        // Guarda el pinodo del directorio raiz y finaliza la ejecución.
+        // Guarda el pinodo del directorio raíz y finaliza la ejecución.
         *(p_inodo) = SB.posInodoRaiz;
         *(p_entrada) = 0;
         return EXIT_SUCCESS;
@@ -108,7 +108,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     char final[strlen(camino_parcial)];
     char tipo;
 
-    // Inicializa los buffers como arrays vacios.
+    // Inicializa los buffers como arrays vacíos.
     memset(inicial, 0, sizeof(entrada.nombre));
     memset(final, 0, strlen(camino_parcial));
     memset(entrada.nombre, 0, sizeof(entrada.nombre));
@@ -177,7 +177,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     // Si inicial no se ha encontrado y se han procesado todas las entradas.
     if (cantEntradasInodo == numEntradaInodo && strcmp(entrada.nombre, inicial))
     {
-        /* Dependiendo de estado introducido en reservar, se realiza diferentes
+        /* Dependiendo del estado introducido en reservar, se realiza diferentes
            acciones. */
         switch (reservar)
         {
@@ -186,7 +186,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
             break;
 
         case 1:
-
             /* Comprueba que el inodo sea diferente de fichero y tenga permisos
                de escritura. */
             if (inodo.tipo == 'f')
@@ -276,7 +275,7 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
     }
 }
 
-/* Funcion: mi_creat:
+/* Función: mi_creat:
 * -------------------
 * Utilizada para crear un fichero o un directorio y su entrada en el directorio
 * padre.
@@ -303,14 +302,14 @@ int mi_creat(const char *camino, unsigned char permisos)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: mi_dir:
+/* Función: mi_dir:
 * -----------------
 * Esta función devuelve el contenido del directorio o bien la información de un 
 * archivo en el buffer. La información de cada elemento del directorio es tipo, 
 * permisos, fecha de modificación, tamaño y nombre y estan divididos por el 
 * carácter '|'. Esta función requiere la función auxiliar formato_ls.
 * 
-*  camino: dirección del elemento
+*  camino: dirección del elemento.
 *  buffer: buffer donde almacenará el contenido del directorio para imprimir.
 *
 * returns: el total de entradas procesadas o bien el código de error para ser 
@@ -401,7 +400,7 @@ int mi_dir(const char *camino, char *buffer)
     return totalEntradas;
 }
 
-/* Funcion: formato_ls:
+/* Función: formato_ls:
 * -----------------
 * Esta función devuelve el contenido de un elemento dentro de un buffer con el
 * formato adecuado para ejecutar un ls.
@@ -463,14 +462,14 @@ int formato_ls(struct entrada entrada, char *buffer)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: mi_chmod:
+/* Función: mi_chmod:
 * -------------------
 * Esta función permite cambiar los permisos de un elemento.
 *
 *  camino: dirección del elemento del cual se quiere cambiar los permisos.
-*  permisos: nuevos permisos que tendra el elemento.
+*  permisos: nuevos permisos que tendrá el elemento.
 *
-* return: Devuelve Exit_Success si ha ido correctamente o bien un código de 
+* return: devuelve Exit_Success si ha ido correctamente o bien un código de 
 *         error para la función mostrar_error_directorios.
 */
 int mi_chmod(const char *camino, unsigned char permisos)
@@ -528,7 +527,7 @@ int mi_stat(const char *camino, struct STAT *p_stat)
     return p_inodo;
 }
 
-/* Funcion: mi_write:
+/* Función: mi_write:
 * ------------------
 * Esta función permite la escritura del contenido de un buffer en un archivo.
 *
@@ -718,7 +717,7 @@ int mi_link(const char *camino1, const char *camino2)
     return EXIT_SUCCESS;
 }
 
-/* Funcion: mi_unlink:
+/* Función: mi_unlink:
 * --------------------
 * Borra la entrada de directorio especificada, esta función sirve tanto para
 * borrar un enlace a un fichero como el contenido de este si no quedan enlaces.
@@ -857,7 +856,7 @@ int mi_unlink_r(const char *camino)
     // Recorre todas las entradas del directorio.
     while (leidos > 0)
     {
-        // Actualiza el offset de lectura e indice.
+        // Actualiza el offset de lectura e índice.
         int offset = offset + leidos;
         int entradas = 0;
 
@@ -900,7 +899,7 @@ int mi_unlink_r(const char *camino)
                     return error;
                 }
             }
-            // Procesa siquiente entrada.
+            // Procesa siguiente entrada.
             entradas++;
         }
         // Lee siguiente conjunto de entradas.

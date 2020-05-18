@@ -824,7 +824,6 @@ int traducir_bloque_inodo(unsigned int ninodo, unsigned int nblogico,
         else
         {
             salvar_inodo = 1;
-
             // Se reserva un bloque físico.
             ptr = reservar_bloque();
             if (ptr == -1)
@@ -1013,7 +1012,7 @@ int liberar_bloques_inodo(unsigned int primerBL, struct inodo *inodo)
             }
             else
             {
-// Para reproducir la solución proporcionada, guarda nBL.
+                // Para reproducir la solución proporcionada, guarda nBL.
 #if DEBUG
                 int auxnBL = nBL;
 #endif
