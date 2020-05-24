@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
                 registro.nEscritura = operacion + 1;
                 registro.nRegistro = rand() % REGMAX;
 
+                
                 // Escribe el registro en su posicion asignada.
                 if ((error = mi_write(camino_hijo, &registro,
                                       registro.nRegistro * sizeof(struct registro),
@@ -109,6 +110,7 @@ int main(int argc, char *argv[])
                     bumount();
                     exit(0);
                 }
+
                 // Augmenta el contador y espera para la siguiente operacion.
                 operacion++;
                 usleep(WAITH);
