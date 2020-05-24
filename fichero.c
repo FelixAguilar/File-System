@@ -30,12 +30,17 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     int bloqueLI = offset / BLOCKSIZE;
     int bloqueLF = (offset + nbytes - 1) / BLOCKSIZE;
 
+    // Espera para entrar en la sección crítica.
+    mi_waitSem();
+
     // Obtiene el bloque físico del inodo.
     int bloquef = traducir_bloque_inodo(ninodo, bloqueLI, 1);
+    mi_signalSem();
     if (bloquef == -1)
     {
         return -1;
     }
+
     // Lee el bloquef del disco.
     char buffer[BLOCKSIZE];
     if (bread(bloquef, buffer) == -1)
@@ -78,8 +83,12 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
         int i = bloqueLI + 1;
         while (i < bloqueLF)
         {
+            // Espera para entrar en la sección crítica.
+            mi_waitSem();
+
             // Obtiene el bloque físico intermedio en el archivo.
             bloquef = traducir_bloque_inodo(ninodo, i, 1);
+            mi_signalSem();
             if (bloquef == -1)
             {
                 return -1;
@@ -94,8 +103,12 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
             bytes_escritos = bytes_escritos + aux;
             i++;
         }
+        // Espera para entrar en la sección crítica.
+        mi_waitSem();
+
         // Obtiene el bloque físico final.
         bloquef = traducir_bloque_inodo(ninodo, bloqueLF, 1);
+        mi_signalSem();
         if (bloquef == -1)
         {
             return -1;
@@ -119,9 +132,13 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
         }
         bytes_escritos = bytes_escritos + desp2 + 1;
     }
+    // Espera para entrar en la sección crítica.
+    mi_waitSem();
+
     // Lee el inodo después de la operación de escritura del archivo.
     if (leer_inodo(ninodo, &inodo))
     {
+        mi_signalSem();
         return -1;
     }
     // Actualiza el tamaño lógico si es mayor que el archivo en el inodo.
@@ -136,8 +153,10 @@ int mi_write_f(unsigned int ninodo, const void *buf_original,
     // Escribe el inodo en el disco virtual.
     if (escribir_inodo(ninodo, inodo))
     {
+        mi_signalSem();
         return -1;
     }
+    mi_signalSem();
     return bytes_escritos;
 }
 
@@ -241,13 +260,21 @@ int mi_read_f(unsigned int ninodo, void *buf_original, unsigned int offset,
         }
         leidos += desp2 + 1;
     }
+    // Espera para entrar en la sección crítica.
+    mi_waitSem();
+
     if (leer_inodo(ninodo, &inodo))
     {
+        mi_signalSem();
         return leidos;
     }
     inodo.atime = time(NULL);
-    escribir_inodo(ninodo, inodo);
-
+    if (escribir_inodo(ninodo, inodo))
+    {
+        mi_signalSem();
+        return leidos;
+    }
+    mi_signalSem();
     return leidos;
 }
 
@@ -295,10 +322,14 @@ int mi_stat_f(unsigned int ninodo, struct STAT *p_stat)
 */
 int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
 {
+    // Espera para entrar en la sección crítica.
+    mi_waitSem();
+
     // Lee el inodo indicado por parámetro.
     struct inodo inodo;
     if (leer_inodo(ninodo, &inodo))
     {
+        mi_signalSem();
         return EXIT_FAILURE;
     }
     // Actualiza los permisos del archivo.
@@ -307,9 +338,10 @@ int mi_chmod_f(unsigned int ninodo, unsigned char permisos)
 
     if (escribir_inodo(ninodo, inodo))
     {
+        mi_signalSem();
         return EXIT_FAILURE;
     }
-
+    mi_signalSem();
     return EXIT_SUCCESS;
 }
 

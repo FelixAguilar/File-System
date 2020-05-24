@@ -1,7 +1,10 @@
 // Autores: Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "bloques.h"
+#include "semaforo_mutex_posix.h"
 
-static int descriptor; // Descriptor del archivo utilizado como disco virtual.
+static sem_t *mutex;               // Semáforo mutex.
+static unsigned int inside_sc = 0; // Variable para evitar código reentrante.
+static int descriptor;             // Descriptor del archivo utilizado como disco virtual.
 
 /* Función: bmount:
 * -----------------
@@ -15,6 +18,8 @@ static int descriptor; // Descriptor del archivo utilizado como disco virtual.
 */
 int bmount(const char *camino)
 {
+    // Inicialización del semáforo.
+    mutex = initSem();
     descriptor = open(camino, O_RDWR | O_CREAT, 0666);
     return descriptor;
 }
@@ -44,7 +49,7 @@ int bread(unsigned int nbloque, void *buf)
                 // Si no hubo errores, devuelve el número de bytes leídos.
                 return bytes;
             }
-        }    
+        }
     }
     return -1;
 }
@@ -94,9 +99,28 @@ int bumount()
 {
     if (close(descriptor) != -1)
     {
+        deleteSem();
         return EXIT_SUCCESS;
     }
 
     // Si no, devuelve el error que ha ocurrido.
     return EXIT_FAILURE;
+}
+
+void mi_waitSem()
+{
+    if (!inside_sc)
+    {
+        waitSem(mutex);
+    }
+    inside_sc++;
+}
+
+void mi_signalSem()
+{
+    inside_sc--;
+    if (!inside_sc)
+    {
+        signalSem(mutex);
+    }
 }

@@ -293,12 +293,17 @@ int mi_creat(const char *camino, unsigned char permisos)
     unsigned int p_entrada = 0;
     int error;
 
+    // Espera para entrar en la sección crítica.
+    mi_waitSem();
+
     // Crea el nuevo elemento.
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo, &p_entrada, 1,
                                 permisos)) < 0)
     {
+        mi_signalSem();
         return error;
     }
+    mi_signalSem();
     return EXIT_SUCCESS;
 }
 
@@ -678,12 +683,18 @@ int mi_link(const char *camino1, const char *camino2)
     unsigned int p_inodo2 = 0;
     unsigned int p_entrada2 = 0;
 
+    // Espera para entrar en la sección crítica:
+    mi_waitSem();
+
     // Crea la entrada del link en el directorio correspondiente.
     if ((error = buscar_entrada(camino2, &p_inodo_dir2, &p_inodo2,
                                 &p_entrada2, 1, 6)) < 0)
     {
+        mi_signalSem();
         return error;
     }
+    mi_signalSem();
+
     // Lee la entrada del link en el directorio.
     struct entrada entrada2;
     if (mi_read_f(p_inodo_dir2, &entrada2,
@@ -702,18 +713,35 @@ int mi_link(const char *camino1, const char *camino2)
     {
         return ERROR_ACCESO_DISCO;
     }
+
+    // Espera para entrar en la sección crítica:
+    mi_waitSem();
+
     // Libera el inodo creado con el buscar_entrada del link.
     if (liberar_inodo(p_inodo2) < 0)
     {
+        mi_signalSem();
         return ERROR_ACCESO_DISCO;
     }
+    mi_signalSem();
+
+    // Espera para entrar en la sección crítica:
+    mi_waitSem();
+
     // Actualiza los metadatos el inodo del archivo 1 y lo guarda.
+    if (leer_inodo(p_inodo1, &inodo1))
+    {
+        mi_signalSem();
+        return ERROR_ACCESO_DISCO;
+    }
     inodo1.nlinks = inodo1.nlinks + 1;
     inodo1.ctime = time(NULL);
     if (escribir_inodo(p_inodo1, inodo1))
     {
+        mi_signalSem();
         return ERROR_ACCESO_DISCO;
     }
+    mi_signalSem();
     return EXIT_SUCCESS;
 }
 
@@ -729,6 +757,9 @@ int mi_link(const char *camino1, const char *camino2)
 */
 int mi_unlink(const char *camino)
 {
+    // Espera para entrar en la sección crítica:
+    mi_waitSem();
+
     // Inicialización de las variables.
     unsigned int p_inodo_dir = 0;
     unsigned int p_inodo = 0;
@@ -739,23 +770,27 @@ int mi_unlink(const char *camino)
     if ((error = buscar_entrada(camino, &p_inodo_dir, &p_inodo,
                                 &p_entrada, 0, 0)) < 0)
     {
+        mi_signalSem();
         return error;
     }
     // Lee el inodo del archivo a borrar.
     struct inodo inodo;
     if (leer_inodo(p_inodo, &inodo))
     {
+        mi_signalSem();
         return ERROR_ACCESO_DISCO;
     }
     // Comprueba si es un directorio y está vacío.
     if (inodo.tipo == 'd' && inodo.tamEnBytesLog > 0)
     {
+        mi_signalSem();
         return ERROR_DIRECTORIO_NO_VACIO;
     }
     // Lee el inodo del directorio.
     struct inodo inodo_dir;
     if (leer_inodo(p_inodo_dir, &inodo_dir))
     {
+        mi_signalSem();
         return ERROR_ACCESO_DISCO;
     }
     // Obtiene el número de entradas que contiene el directorio.
@@ -764,10 +799,12 @@ int mi_unlink(const char *camino)
     // Comprueba si la entrada a eliminar es la última.
     if (p_entrada == num_entradas - 1)
     {
+
         // Elimina la última entrada.
         if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog -
                                           sizeof(struct entrada)) < 0)
         {
+            mi_signalSem();
             return ERROR_ACCESO_DISCO;
         }
     }
@@ -779,6 +816,7 @@ int mi_unlink(const char *camino)
                       sizeof(struct entrada) * (num_entradas - 1),
                       sizeof(struct entrada)) < 0)
         {
+            mi_signalSem();
             return ERROR_ACCESO_DISCO;
         }
         // Escribe la última entrada en la posición de la entrada a borrar.
@@ -786,16 +824,23 @@ int mi_unlink(const char *camino)
                        sizeof(struct entrada) * p_entrada,
                        sizeof(struct entrada)) < 0)
         {
+            mi_signalSem();
             return ERROR_ACCESO_DISCO;
         }
         // Elimina la última entrada.
         if (mi_truncar_f(p_inodo_dir, inodo_dir.tamEnBytesLog -
                                           sizeof(struct entrada)) < 0)
         {
+            mi_signalSem();
             return ERROR_ACCESO_DISCO;
         }
     }
     // Decrementa el número de enlaces al inodo.
+    if (leer_inodo(p_inodo, &inodo))
+    {
+        mi_signalSem();
+        return ERROR_ACCESO_DISCO;
+    }
     inodo.nlinks = inodo.nlinks - 1;
 
     // Si no quedan enlaces al inodo entonces se elimina.
@@ -803,6 +848,7 @@ int mi_unlink(const char *camino)
     {
         if (liberar_inodo(p_inodo) < 0)
         {
+            mi_signalSem();
             return ERROR_ACCESO_DISCO;
         }
     }
@@ -812,9 +858,11 @@ int mi_unlink(const char *camino)
         inodo.ctime = time(NULL);
         if (escribir_inodo(p_inodo, inodo))
         {
+            mi_signalSem();
             return ERROR_ACCESO_DISCO;
         }
     }
+    mi_signalSem();
     return EXIT_SUCCESS;
 }
 
