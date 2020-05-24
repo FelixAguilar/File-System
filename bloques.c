@@ -18,9 +18,23 @@ static int descriptor;             // Descriptor del archivo utilizado como disc
 */
 int bmount(const char *camino)
 {
-    // Inicialización del semáforo.
-    mutex = initSem();
-    descriptor = open(camino, O_RDWR | O_CREAT, 0666);
+    if (descriptor > 0)
+    {
+        close(descriptor);
+    }
+    if ((descriptor = open(camino, O_RDWR | O_CREAT, 0666)) == -1)
+    {
+        fprintf(stderr, "Error: bloques.c --> bmount() --> open()\n");
+    }
+
+    if (!mutex)
+    {
+        mutex = initSem();
+        if (mutex == SEM_FAILED)
+        {
+            return -1;
+        }
+    }
     return descriptor;
 }
 
@@ -97,14 +111,15 @@ int bwrite(unsigned int nbloque, const void *buf)
 */
 int bumount()
 {
-    if (close(descriptor) != -1)
+    descriptor = close(descriptor);
+    if (descriptor == -1)
     {
-        deleteSem();
-        return EXIT_SUCCESS;
+        fprintf(stderr, "Error: bloques.c --> bumount() --> close(): %d: %s\n",
+                errno, strerror(errno));
+        return -1;
     }
-
-    // Si no, devuelve el error que ha ocurrido.
-    return EXIT_FAILURE;
+    deleteSem();
+    return EXIT_SUCCESS;
 }
 
 void mi_waitSem()

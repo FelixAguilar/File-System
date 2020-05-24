@@ -140,37 +140,40 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
             // Obtiene la dirección física del bloque de entradas a procesar.
             int bloquef = traducir_bloque_inodo(
                 *(p_inodo_dir),
-                numEntradaInodo / (BLOCKSIZE / sizeof(struct entrada)), 0);
-            if (bloquef == -1)
+                numEntradaInodo / ((BLOCKSIZE / sizeof(struct entrada)) - 1), 0);
+            if (bloquef != -1)
             {
-                return ERROR_ACCESO_DISCO;
-            }
-            // Lee el contenido del bloque de entradas.
-            memset(entradas, 0, BLOCKSIZE);
-            int bytes;
-            if ((bytes = bread(bloquef, entradas)) == -1)
-            {
-                return ERROR_ACCESO_DISCO;
-            }
-            /* Itera por el contenido del bloque de entradas mientras no se 
+                // Lee el contenido del bloque de entradas.
+                memset(entradas, 0, BLOCKSIZE);
+                int bytes;
+                if ((bytes = bread(bloquef, entradas)) == -1)
+                {
+                    return ERROR_ACCESO_DISCO;
+                }
+                /* Itera por el contenido del bloque de entradas mientras no se 
                hayan procesado todas las entradas de este o bien encontrado el 
                elemento inicial.*/
-            int numEntradaArray = 0;
-            while (numEntradaArray < ((bytes / sizeof(struct entrada)) - 1) &&
-                   strcmp(entradas[numEntradaArray].nombre, inicial) &&
-                   (numEntradaInodo < cantEntradasInodo))
-            {
-                // Avanza dentro de las entradas del inodo.
-                numEntradaArray++;
-                numEntradaInodo++;
-            }
-            /* Si no se ha sobrepasado el número de elementos del directorio y 
+                int numEntradaArray = 0;
+                while (numEntradaArray < ((bytes / sizeof(struct entrada)) - 1) &&
+                       strcmp(entradas[numEntradaArray].nombre, inicial) &&
+                       (numEntradaInodo < cantEntradasInodo))
+                {
+                    // Avanza dentro de las entradas del inodo.
+                    numEntradaArray++;
+                    numEntradaInodo++;
+                }
+                /* Si no se ha sobrepasado el número de elementos del directorio y 
                el elemento se ha encontrado, copia sus datos en entrada. */
-            if (cantEntradasInodo != numEntradaInodo &&
-                !strcmp(entradas[numEntradaArray].nombre, inicial))
+                if (cantEntradasInodo != numEntradaInodo &&
+                    !strcmp(entradas[numEntradaArray].nombre, inicial))
+                {
+                    strcpy(entrada.nombre, entradas[numEntradaArray].nombre);
+                    entrada.ninodo = entradas[numEntradaArray].ninodo;
+                }
+            }
+            else
             {
-                strcpy(entrada.nombre, entradas[numEntradaArray].nombre);
-                entrada.ninodo = entradas[numEntradaArray].ninodo;
+                numEntradaInodo = cantEntradasInodo;
             }
         }
     }
@@ -184,7 +187,6 @@ int buscar_entrada(const char *camino_parcial, unsigned int *p_inodo_dir,
         case 0:
             return ERROR_NO_EXISTE_ENTRADA_CONSULTA;
             break;
-
         case 1:
             /* Comprueba que el inodo sea diferente de fichero y tenga permisos
                de escritura. */
