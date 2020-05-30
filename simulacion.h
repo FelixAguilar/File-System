@@ -3,8 +3,8 @@
 #include <signal.h>
 #include "directorios.h"
 
-#define OPERACIONES 10 // Operaciones a realizar por cada hijo.
-#define PROCESOS 10  // Hilos de ejecucion que se van a realizar.
+#define OPERACIONES 50 // Operaciones a realizar por cada hijo.
+#define PROCESOS 100   // Hilos de ejecucion que se van a realizar.
 
 #define REGMAX 500000 // Registro maximo a escribir.
 #define WAITP 200000  // Tiempo de espera del padre (microseg)
