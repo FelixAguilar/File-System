@@ -1,8 +1,8 @@
 // Félix Aguilar, Adrián Bennasar, Álvaro Bueno
 #include "verificacion.h"
 
-/* Fichero: mi_cat.c
-* ------------------
+/* Fichero: verificacion.c
+* ------------------------
 *  
 *
 *  argc: número de argumentos introducidos.
@@ -12,23 +12,31 @@
 */
 int main(int argc, char const *argv[])
 {
-    struct STAT stat;
+    // Variables de estado.
     int error;
+    int entrada = 0;
+    int escritos = 0;
+    int registro;
+
+    // Variables del directorio.
+    struct STAT stat;
     int numEntradas;
     char camino[250];
-    int entrada = 0;
+
+    // Variables del proceso.
     char *pid;
-    char buffer[1000];
+    int totalRegistros;
     char caminoProceso[250];
-    struct registro registro;
-    int numRegistro;
+    struct registro *registros;
     struct informacion info;
-    struct tm *ts;
+
+    // Variables de salida.
+    char buffer[1000];
     char pritime[80];
     char ulttime[80];
     char mentime[80];
     char maytime[80];
-    int escritos = 0;
+    struct tm *ts;
 
     // Comprobación de la sintaxis de los argumentos.
     if (argc != 3)
@@ -36,82 +44,114 @@ int main(int argc, char const *argv[])
         fprintf(stderr, "Sintaxis: verificacion <disco> <directorio_simulacion>\n");
         return EXIT_FAILURE;
     }
+    // Monta el disco en el sistema.
     if (bmount(argv[1]) < 0)
     {
         fprintf(stderr, "Error: no se ha podido montar el disco\n");
     }
+    // Lectura del inodo del directorio.
     if ((error = mi_stat(argv[2], &stat)) < 0)
     {
         mostrar_error_directorios(error);
         return EXIT_FAILURE;
     }
+
+    // Calculo de entradas en el directorio.
     numEntradas = stat.tamEnBytesLog / sizeof(struct entrada);
-    struct entrada entradas[numEntradas];
     if (numEntradas != PROCESOS)
     {
         return EXIT_FAILURE;
     }
+    struct entrada entradas[numEntradas];
+
+    // Crea el camino al informe y el documento.
     sprintf(camino, "%sinforme.txt", argv[2]);
     if ((error = mi_creat(camino, 6)) < 0)
     {
         mostrar_error_directorios(error);
         return EXIT_FAILURE;
     }
-
+    // Lee las entradas del directorio y las guarda.
     if ((error = mi_read(argv[2], entradas, 0, stat.tamEnBytesLog)) < 0)
     {
         mostrar_error_directorios(error);
         return EXIT_FAILURE;
     }
-
+    // Mientras haya entradas que tratar.
     while (entrada < numEntradas)
     {
+        // Obtiene el pid del proceso con el nombre de la entrada.
         pid = strchr(entradas[entrada].nombre, '_');
         info.pid = atoi(pid + 1);
+
+        // Obtiene el camino del archivo del proceso.
+        memset(caminoProceso, 0, 250);
         sprintf(caminoProceso, "%s%s/prueba.dat", argv[2], entradas[entrada].nombre);
 
-        numRegistro = 0;
-        info.nEscrituras = 0;
-
-        while ((error = mi_read(caminoProceso, &registro, numRegistro * sizeof(struct registro), sizeof(struct registro))) > 0)
+        //Obtiene tamaño del archivo.
+        if ((error = mi_stat(caminoProceso, &stat)) < 0)
         {
-            if (registro.pid == info.pid)
+            mostrar_error_directorios(error);
+            return EXIT_FAILURE;
+        }
+
+        // Inicio de la lectura del archivo.
+        totalRegistros = (stat.tamEnBytesLog / sizeof(struct registro));
+        registros = malloc(stat.tamEnBytesLog);
+        if (!registros)
+        {
+            return EXIT_FAILURE;
+        }
+        info.nEscrituras = 0;
+        registro = 0;
+
+        // Lectura de registros.
+        if ((error = mi_read(caminoProceso, registros, 0, stat.tamEnBytesLog)) < 0)
+        {
+            mostrar_error_directorios(error);
+            return EXIT_FAILURE;
+        }
+
+        // Procesado de los valores de registros.
+        while (registro < totalRegistros)
+        {
+
+            //fprintf(stderr, "Registro %d de %d\n", registro, totalRegistros);
+
+            // El registro leido es del mismo pid que el procesado.
+            if (registros[registro].pid == info.pid)
             {
+                // Actualiza los elementos del primer
                 if (!info.nEscrituras)
                 {
-                    info.PrimeraEscritura = registro;
-                    info.UltimaEscritura = registro;
-                    info.MenorPosicion = registro;
-                    info.MayorPosicion = registro;
+                    info.PrimeraEscritura = registros[registro];
+                    info.UltimaEscritura = registros[registro];
+                    info.MenorPosicion = registros[registro];
+                    info.MayorPosicion = registros[registro];
                     info.nEscrituras = 1;
                 }
                 else
                 {
-                    if ((difftime(registro.fecha, info.PrimeraEscritura.fecha) < 0) || ((difftime(registro.fecha, info.PrimeraEscritura.fecha) == 0) && (registro.nEscritura < info.PrimeraEscritura.nEscritura)))
+                    if ((difftime(registros[registro].fecha, info.PrimeraEscritura.fecha) < 0) || ((difftime(registros[registro].fecha, info.PrimeraEscritura.fecha) == 0) && (registros[registro].nEscritura < info.PrimeraEscritura.nEscritura)))
                     {
-                        info.PrimeraEscritura = registro;
+                        info.PrimeraEscritura = registros[registro];
                     }
-                    if ((difftime(registro.fecha, info.UltimaEscritura.fecha) > 0) || ((difftime(registro.fecha, info.UltimaEscritura.fecha) == 0) && (registro.nEscritura > info.UltimaEscritura.nEscritura)))
+                    if ((difftime(registros[registro].fecha, info.UltimaEscritura.fecha) > 0) || ((difftime(registros[registro].fecha, info.UltimaEscritura.fecha) == 0) && (registros[registro].nEscritura > info.UltimaEscritura.nEscritura)))
                     {
-                        info.UltimaEscritura = registro;
+                        info.UltimaEscritura = registros[registro];
                     }
-                    if (registro.nRegistro < info.MenorPosicion.nRegistro)
+                    if (registros[registro].nRegistro < info.MenorPosicion.nRegistro)
                     {
-                        info.MenorPosicion = registro;
+                        info.MenorPosicion = registros[registro];
                     }
-                    if (registro.nRegistro > info.MayorPosicion.nRegistro)
+                    if (registros[registro].nRegistro > info.MayorPosicion.nRegistro)
                     {
-                        info.MayorPosicion = registro;
+                        info.MayorPosicion = registros[registro];
                     }
                     info.nEscrituras++;
                 }
             }
-            numRegistro++;
-        }
-        if (error < 0)
-        {
-            mostrar_error_directorios(error);
-            return EXIT_FAILURE;
+            registro++;
         }
 
         // Cambia el formato de la fecha y la hora de los campos del inodo.
@@ -127,8 +167,8 @@ int main(int argc, char const *argv[])
         memset(buffer, 0, sizeof(buffer));
 
         sprintf(buffer, "PID: %d\nNumero de escrituras:\t%d\nPrimera escritura:"
-                        "\t%d\t%d\t%s\nUltima escritura:\t%d\t%d\t%s\nMayor po"
-                        "sición:\t\t%d\t%d\t%s\nMenor posición:\t\t%d\t%d\t%s\n\n",
+                        "\t%d\t%d\t%s\nUltima escritura:\t%d\t%d\t%s\nMenor po"
+                        "sición:\t\t%d\t%d\t%s\nMayor posición:\t\t%d\t%d\t%s\n\n",
                 info.pid, info.nEscrituras,
                 info.PrimeraEscritura.nEscritura,
                 info.PrimeraEscritura.nRegistro,
@@ -150,6 +190,10 @@ int main(int argc, char const *argv[])
         }
         escritos = strlen(buffer) + escritos;
         entrada++;
+
+        fprintf(stderr, "%d escrituras validadas en %s\n", info.nEscrituras, caminoProceso);
     }
+
+    fprintf(stderr, "Procesos validados: %d\n", entrada);
     return EXIT_SUCCESS;
 }
